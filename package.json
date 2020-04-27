@@ -1,0 +1,180 @@
+{
+	"name": "cscope-code",
+	"displayName": "cscope-code",
+	"description": "Cscope Extension for Code",
+	"icon": "https://raw.githubusercontent.com/bshin/cscope-code/master/cscope.png",
+	"version": "0.0.1",
+	"publisher": "bshin",
+	"repository": "https://github.com/bshin/cscope-code",
+	"engines": {
+		"vscode": "^1.44.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onLanguage:c",
+		"onLanguage:cpp"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.cscope-code.build",
+				"title": "Cscope Code: Build"
+			},
+			{
+				"command": "extension.cscope-code.symbol",
+				"title": "Cscope Code: Symbol"
+			},
+			{
+				"command": "extension.cscope-code.definition",
+				"title": "Cscope Code: Definition"
+			},
+			{
+				"command": "extension.cscope-code.callee",
+				"title": "Cscope Code: Callee"
+			},
+			{
+				"command": "extension.cscope-code.caller",
+				"title": "Cscope Code: Caller"
+			},
+			{
+				"command": "extension.cscope-code.text",
+				"title": "Cscope Code: Text"
+			},
+			{
+				"command": "extension.cscope-code.egrep",
+				"title": "Cscope Code: Pattern"
+			},
+			{
+				"command": "extension.cscope-code.file",
+				"title": "Cscope Code: File"
+			},
+			{
+				"command": "extension.cscope-code.include",
+				"title": "Cscope Code: Include"
+			},
+			{
+				"command": "extension.cscope-code.set",
+				"title": "Cscope Code: Set"
+			},
+			{
+				"command": "extension.cscope-code.result",
+				"title": "Cscope Code: Result"
+			},
+			{
+				"command": "extension.cscope-code.pop",
+				"title": "Cscope Code: Pop"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "extension.cscope-code.build",
+				"key": "ctrl+. b"
+			},
+			{
+				"command": "extension.cscope-code.symbol",
+				"key": "ctrl+. s"
+			},
+			{
+				"command": "extension.cscope-code.definition",
+				"key": "ctrl+. g"
+			},
+			{
+				"command": "extension.cscope-code.callee",
+				"key": "ctrl+. a"
+			},
+			{
+				"command": "extension.cscope-code.caller",
+				"key": "ctrl+. c"
+			},
+			{
+				"command": "extension.cscope-code.text",
+				"key": "ctrl+. t"
+			},
+			{
+				"command": "extension.cscope-code.egrep",
+				"key": "ctrl+. e"
+			},
+			{
+				"command": "extension.cscope-code.file",
+				"key": "ctrl+. f"
+			},
+			{
+				"command": "extension.cscope-code.include",
+				"key": "ctrl+. i"
+			},
+			{
+				"command": "extension.cscope-code.set",
+				"key": "ctrl+. n"
+			},
+			{
+				"command": "extension.cscope-code.result",
+				"key": "ctrl+. ."
+			},
+			{
+				"command": "extension.cscope-code.pop",
+				"key": "ctrl+. o"
+			}
+		],
+		"configuration": [
+			{
+				"title": "Cscope for Code",
+				"properties": {
+					"build": {
+						"type": "string",
+						"default": "cscope -RbU",
+						"description": "Command to build a cscope database."
+					},
+					"query": {
+						"type": "string",
+						"default": "cscope -RdL",
+						"description": "Command to query a symbol."
+					},
+					"database": {
+						"type": "string",
+						"default": "cscope.out",
+						"description": "A database filename for cscope."
+					},
+					"auto": {
+						"type": "boolean",
+						"default": "true",
+						"description": "Generate a cscope database when open an workspace or store a file on it."
+					},
+					"extensions": {
+						"type": "string",
+						"default": "c,h",
+						"description": "Extensions to monitor their changes to update database."
+					},
+					"preview": {
+						"type": "boolean",
+						"default": "true",
+						"description": "Preview the result of the query."
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.44.0",
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "^13.11.0",
+		"eslint": "^6.8.0",
+		"@typescript-eslint/parser": "^2.26.0",
+		"@typescript-eslint/eslint-plugin": "^2.26.0",
+		"glob": "^7.1.6",
+		"mocha": "^7.1.1",
+		"typescript": "^3.8.3",
+		"vscode-test": "^1.3.0"
+	}
+}

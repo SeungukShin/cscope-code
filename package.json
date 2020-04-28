@@ -2,10 +2,13 @@
 	"name": "cscope-code",
 	"displayName": "cscope-code",
 	"description": "Cscope Extension for Code",
-	"icon": "https://raw.githubusercontent.com/bshin/cscope-code/master/cscope.png",
+	"icon": "cscope.png",
 	"version": "0.0.1",
 	"publisher": "bshin",
-	"repository": "https://github.com/bshin/cscope-code",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/bshin/cscope-code"
+	},
 	"engines": {
 		"vscode": "^1.44.0"
 	},

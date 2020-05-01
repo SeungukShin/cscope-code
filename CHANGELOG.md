@@ -4,7 +4,7 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.1]
 ### Added
 - Command to build a cscope database.
 - Command for queries which cscope supports.

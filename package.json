@@ -4,10 +4,10 @@
 	"description": "Cscope Extension for Code",
 	"icon": "cscope.png",
 	"version": "0.0.1",
-	"publisher": "bshin",
+	"publisher": "SeungukShin",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/bshin/cscope-code"
+		"url": "https://github.com/SeungukShin/cscope-code"
 	},
 	"engines": {
 		"vscode": "^1.44.0"

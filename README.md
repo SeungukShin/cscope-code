@@ -1,4 +1,7 @@
 # Cscope Extension for VS Code
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/SeungukShin/cscope-code/CI)
+[![](https://img.shields.io/visual-studio-marketplace/v/SeungukShin.cscope-code)](https://marketplace.visualstudio.com/items?itemName=SeungukShin.cscope-code)
+![install](https://img.shields.io/visual-studio-marketplace/i/SeungukShin.cscope-code)
 
 Integrates [cscope](http://cscope.sourceforge.net) into VS Code.
 

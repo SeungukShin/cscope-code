@@ -35,6 +35,10 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF:11}
+
       - name: Upload Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
@@ -42,6 +46,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cscope-code-${GITHUB_REF:11}.vsix
-          asset_name: cscope-code-${GITHUB_REF:11}.vsix
+          asset_path: ./cscope-code-${{ steps.get_version.outputs.VERSION }}.vsix
+          asset_name: cscope-code-${{ steps.get_version.outputs.VERSION }}.vsix
           asset_content_type: application/zip

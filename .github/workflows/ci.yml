@@ -11,19 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checks out repository to $GITHUB_WORKSPACE
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    # Install dependencies
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    # Install vsce
-    - name: Install vsce
-      run: |
-        npm install vsce
-        echo "::add-path::$(npm bin)"
+      - name: Install vsce
+        run: |
+          npm install vsce
+          echo "::add-path::$(npm bin)"
 
-    # Build vscode extension
-    - name: Build vscode extension
-      run: vsce package
+      - name: Build vscode extension
+        run: vsce package

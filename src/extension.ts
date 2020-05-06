@@ -2,49 +2,50 @@ import * as vscode from 'vscode';
 import * as path from 'path'
 import * as cp from 'child_process'
 
-class CscopeItem implements vscode.QuickPickItem {
-	private file: string;
-	private func: string;
-	private line: number;
-	private column: number;
+class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
 	private rest: string;
 	private text: string;
+	// for QuickPickItem
 	label: string;
+	// for CallHierarchyItem
 	detail: string;
+	kind: vscode.SymbolKind;
+	name: string;
+	range: vscode.Range;
+	selectionRange: vscode.Range;
+	uri: vscode.Uri;
 
-	constructor(file: string, func: string, line: string, rest: string, pattern: string) {
-		const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
-		this.file = path.posix.join(root, file);
-		this.func = func;
-		this.line = parseInt(line) - 1;
-		this.column = 0;
+	constructor(uri: vscode.Uri, func: string, range: vscode.Range, rest: string, text: string) {
+		const offset = vscode.workspace.rootPath ? vscode.workspace.rootPath.length + 1 : 0;
+		this.uri = uri;
+		this.name = func;
 		this.rest = rest;
-		this.text = '';
+		this.text = text;
 		this.label = func + ' : ' + rest;
-		this.detail = file + ':' + line;
-		vscode.workspace.openTextDocument(this.file).then((f: vscode.TextDocument) => {
-			this.text = f.lineAt(this.line).text;
-			this.column = this.text.search(pattern);
-		}), ((error: any) => {
-			const msg: string = 'Cannot open "' + file + '".';
-			vscode.window.showInformationMessage(msg);
-		});
+		this.detail = uri.fsPath.substring(offset) + ':' + range.start.line.toString() + ':' + range.start.character.toString();
+		this.kind = vscode.SymbolKind.Function;
+		this.range = range;
+		this.selectionRange = range;
+	}
+
+	getUri(): vscode.Uri {
+		return this.uri;
 	}
 
 	getFile(): string {
-		return this.file;
+		return this.uri.fsPath;
 	}
 
 	getFunction(): string {
-		return this.func;
+		return this.name;
 	}
 
 	getLineNumber(): number {
-		return this.line;
+		return this.range.start.line;
 	}
 
 	getColumnNumber(): number {
-		return this.column;
+		return this.range.start.character;
 	}
 
 	getLine(): string {
@@ -75,21 +76,32 @@ class CscopeQuery {
 		return this.results;
 	}
 
-	setResults(output: string): void {
+	async setResults(output: string): Promise<void> {
 		const lines = output.split('\n');
-		for (let i in lines) {
-			if (lines[i].length < 3) {
+		for (let line of lines) {
+			if (line.length < 3) {
 				continue;
 			}
-			const line = lines[i];
 			const file_last = line.indexOf(' ');
 			const func_last = line.indexOf(' ', file_last + 1);
 			const line_last = line.indexOf(' ', func_last + 1);
 			const file = line.slice(0, file_last);
 			const func = line.slice(file_last + 1, func_last);
-			const lnum = line.slice(func_last + 1, line_last);
+			const lnum = parseInt(line.slice(func_last + 1, line_last)) - 1;
 			const rest = line.slice(line_last + 1);
-			this.results.push(new CscopeItem(file, func, lnum, rest, this.pattern));
+			let text = '';
+			let cnum = 0;
+			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
+			const uri = vscode.Uri.file(path.posix.join(root, file));
+			await vscode.workspace.openTextDocument(uri).then((f: vscode.TextDocument) => {
+				text = f.lineAt(lnum).text;
+				cnum = text.search(this.pattern);
+			}), ((error: any) => {
+				const msg: string = 'Cannot open "' + file + '".';
+				vscode.window.showInformationMessage(msg);
+			});
+			const range = new vscode.Range(lnum, cnum, lnum, cnum + this.pattern.length);
+			this.results.push(new CscopeItem(uri, func, range, rest, text));
 		}
 	}
 };
@@ -376,8 +388,7 @@ export class Cscope {
 		await this.execute(cmd).then(({stdout, stderr}) => {
 			this.queryResult = new CscopeQuery(option, word);
 			this.output.appendLine(stdout);
-			this.queryResult.setResults(stdout);
-			this.quickPick(this.queryResult);
+			this.queryResult.setResults(stdout).then(() => this.quickPick(this.queryResult));
 		}, ({stdout, stderr}) => {
 			const msg: string = 'Error occurred while querying: "' + cmd + '".';
 			this.output.appendLine(msg);

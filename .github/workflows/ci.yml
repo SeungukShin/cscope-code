@@ -22,7 +22,7 @@ jobs:
     - name: Install vsce
       run: |
         npm install vsce
-        ::add-path::./node_modules/vsce/out
+        ::add-path::$(npm bin)
 
     # Build vscode extension
     - name: Build vscode extension

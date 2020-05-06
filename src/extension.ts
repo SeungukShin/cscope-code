@@ -374,21 +374,15 @@ export class Cscope {
 		quickPick.show();
 	}
 
-	private async query(option: string): Promise<void> {
-		const word = await vscode.window.showInputBox({value: this.findWord()});
-		if (!word) {
-			const msg: string = 'Cannot get pattern from the input box.';
-			this.output.appendLine(msg);
-			vscode.window.showInformationMessage(msg);
-			return;
-		}
-		const cmd: string = this.config.get('query') + ' -f ' + this.config.get('database') + this.option[option] + word;
+	private async queryPattern(option: string, pattern: string): Promise<void> {
+		const cmd: string = this.config.get('query') + ' -f ' + this.config.get('database') + this.option[option] + pattern;
 		this.output.appendLine(cmd);
-		const prog = vscode.window.setStatusBarMessage('Querying "' + word + '"...');
+		const prog = vscode.window.setStatusBarMessage('Querying "' + pattern + '"...');
+		let output = '';
 		await this.execute(cmd).then(({stdout, stderr}) => {
-			this.queryResult = new CscopeQuery(option, word);
+			this.queryResult = new CscopeQuery(option, pattern);
 			this.output.appendLine(stdout);
-			this.queryResult.setResults(stdout).then(() => this.quickPick(this.queryResult));
+			output = stdout;
 		}, ({stdout, stderr}) => {
 			const msg: string = 'Error occurred while querying: "' + cmd + '".';
 			this.output.appendLine(msg);
@@ -400,7 +394,20 @@ export class Cscope {
 			vscode.window.showInformationMessage(msg);
 			this.output.appendLine(stderr);
 		});
+		await this.queryResult.setResults(output);
 		prog.dispose();
+	}
+
+	private async query(option: string): Promise<void> {
+		const word = await vscode.window.showInputBox({value: this.findWord()});
+		if (!word) {
+			const msg: string = 'Cannot get pattern from the input box.';
+			this.output.appendLine(msg);
+			vscode.window.showInformationMessage(msg);
+			return;
+		}
+		await this.queryPattern(option, word);
+		this.quickPick(this.queryResult);
 	}
 }
 

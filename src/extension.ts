@@ -91,16 +91,23 @@ class CscopeQuery {
 			const rest = line.slice(line_last + 1);
 			let text = '';
 			let cnum = 0;
+			let length = 0;
 			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
 			const uri = vscode.Uri.file(path.posix.join(root, file));
 			await vscode.workspace.openTextDocument(uri).then((f: vscode.TextDocument) => {
 				text = f.lineAt(lnum).text;
-				cnum = text.search(this.pattern);
+				if (this.type === 'callee') {
+					cnum = text.search(func);
+					length = func.length;
+				} else {
+					cnum = text.search(this.pattern);
+					length = this.pattern.length;
+				}
 			}), ((error: any) => {
 				const msg: string = 'Cannot open "' + file + '".';
 				vscode.window.showInformationMessage(msg);
 			});
-			const range = new vscode.Range(lnum, cnum, lnum, cnum + this.pattern.length);
+			const range = new vscode.Range(lnum, cnum, lnum, cnum + length);
 			this.results.push(new CscopeItem(uri, func, range, rest, text));
 		}
 	}
@@ -130,7 +137,7 @@ class CscopePosition {
 	}
 }
 
-export class Cscope {
+export class Cscope implements vscode.CallHierarchyProvider {
 	private output: vscode.OutputChannel;
 	private config: vscode.WorkspaceConfiguration;
 	private queryResult: CscopeQuery;
@@ -201,6 +208,9 @@ export class Cscope {
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set')));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick(this.queryResult)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.popPosition()));
+
+		// Register CallHierarchyProvider
+		context.subscriptions.push(vscode.languages.registerCallHierarchyProvider('c', this));
 	}
 
 	public dispose(): void {
@@ -266,7 +276,7 @@ export class Cscope {
 			const msg: string = 'Cannot find Active Text Editor.';
 			this.output.appendLine(msg);
 			vscode.window.showInformationMessage(msg);
-			return "";
+			return '';
 		}
 		const document = editor.document;
 		const selection = editor.selection;
@@ -274,6 +284,9 @@ export class Cscope {
 			return document.getText(selection);
 		}
 		const range = document.getWordRangeAtPosition(selection.active);
+		if (!range) {
+			return '';
+		}
 		return document.getText(range);
 	}
 
@@ -408,6 +421,37 @@ export class Cscope {
 		}
 		await this.queryPattern(option, word);
 		this.quickPick(this.queryResult);
+	}
+
+	prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CallHierarchyItem | undefined {
+		const range = document.getWordRangeAtPosition(position);
+		if (!range) {
+			return undefined;
+		}
+		const word = document.getText(range);
+		return new vscode.CallHierarchyItem(vscode.SymbolKind.Function, word, '', document.uri, range, range);
+	}
+
+	async provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyOutgoingCall[] | undefined> {
+		let document = await vscode.workspace.openTextDocument(item.uri);
+		let outgoingCallItems: vscode.CallHierarchyOutgoingCall[] = [];
+		await this.queryPattern('callee', item.name);
+		for (let result of this.queryResult.getResult()) {
+			const outgo = new vscode.CallHierarchyOutgoingCall(result, [result.range]);
+			outgoingCallItems.push(outgo);
+		}
+		return outgoingCallItems;
+	}
+
+	async provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyIncomingCall[]> {
+		let document = await vscode.workspace.openTextDocument(item.uri);
+		let incomingCallItems: vscode.CallHierarchyIncomingCall[] = [];
+		await this.queryPattern('caller', item.name);
+		for (let result of this.queryResult.getResult()) {
+			const income = new vscode.CallHierarchyIncomingCall(result, [result.range]);
+			incomingCallItems.push(income);
+		}
+		return incomingCallItems;
 	}
 }
 

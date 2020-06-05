@@ -4,6 +4,10 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [Unreleased]
+### Fixed
+- Fix default values for auto and preview. ([Issue #1](https://github.com/SeungukShin/cscope-code/issues/1))
+
 ## [0.0.2]
 ### Added
 - Support Call Hierarchy.

@@ -142,7 +142,7 @@
 					},
 					"auto": {
 						"type": "boolean",
-						"default": "true",
+						"default": true,
 						"description": "Generate a cscope database when open an workspace or store a file on it."
 					},
 					"extensions": {
@@ -152,7 +152,7 @@
 					},
 					"preview": {
 						"type": "boolean",
-						"default": "true",
+						"default": true,
 						"description": "Preview the result of the query."
 					}
 				}

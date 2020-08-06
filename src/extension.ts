@@ -82,6 +82,7 @@ class CscopeQuery {
 			if (line.length < 3) {
 				continue;
 			}
+			// TODO: what if file name contains a space?
 			const file_last = line.indexOf(' ');
 			const func_last = line.indexOf(' ', file_last + 1);
 			const line_last = line.indexOf(' ', func_last + 1);
@@ -94,7 +95,8 @@ class CscopeQuery {
 			let length = 0;
 			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
 			const uri = vscode.Uri.file(path.posix.join(root, file));
-			await vscode.workspace.openTextDocument(uri).then((f: vscode.TextDocument) => {
+			try {
+				const f = await vscode.workspace.openTextDocument(uri);
 				text = f.lineAt(lnum).text;
 				if (this.type === 'callee') {
 					cnum = text.search(func);
@@ -103,12 +105,20 @@ class CscopeQuery {
 					cnum = text.search(this.pattern);
 					length = this.pattern.length;
 				}
-			}), ((error: any) => {
-				const msg: string = 'Cannot open "' + file + '".';
-				vscode.window.showInformationMessage(msg);
-			});
-			const range = new vscode.Range(lnum, cnum, lnum, cnum + length);
-			this.results.push(new CscopeItem(uri, func, range, rest, text));
+				if (cnum == -1) {
+					// If search pattern is not found in that line, still display the result
+					// Because the intended result could be shifted by a few lines due to the
+					// database not being up to date.
+					// TODO: should we search the whole file instead at this point?
+					cnum = 0;
+					length = 0;
+				}
+				const range = new vscode.Range(lnum, cnum, lnum, cnum + length);
+				this.results.push(new CscopeItem(uri, func, range, rest, text));
+			} catch (err) {
+				const msg: string = 'Could not open "' + file + '".';
+				vscode.window.showWarningMessage(msg);
+			}
 		}
 	}
 };

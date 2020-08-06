@@ -158,7 +158,7 @@ export class Cscope implements vscode.CallHierarchyProvider {
 
 	constructor(context: vscode.ExtensionContext) {
 		this.output = vscode.window.createOutputChannel('Cscope');
-		this.config = vscode.workspace.getConfiguration();
+		this.config = vscode.workspace.getConfiguration('cscopeCode');
 		this.queryResult = new CscopeQuery('', '');
 		this.history = [];
 		this.preview = undefined;
@@ -189,7 +189,7 @@ export class Cscope implements vscode.CallHierarchyProvider {
 
 		// Register Configuration Watcher
 		context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-			this.config = vscode.workspace.getConfiguration();
+			this.config = vscode.workspace.getConfiguration('cscopeCode');
 			if (e.affectsConfiguration('auto') || e.affectsConfiguration('extensions')) {
 				this.buildAuto();
 			}

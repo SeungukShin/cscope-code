@@ -125,32 +125,32 @@
 			{
 				"title": "Cscope for Code",
 				"properties": {
-					"build": {
+					"cscopeCode.build": {
 						"type": "string",
 						"default": "cscope -RbU",
 						"description": "Command to build a cscope database."
 					},
-					"query": {
+					"cscopeCode.query": {
 						"type": "string",
 						"default": "cscope -RdL",
 						"description": "Command to query a symbol."
 					},
-					"database": {
+					"cscopeCode.database": {
 						"type": "string",
 						"default": "cscope.out",
 						"description": "A database filename for cscope."
 					},
-					"auto": {
+					"cscopeCode.auto": {
 						"type": "boolean",
 						"default": true,
 						"description": "Generate a cscope database when open an workspace or store a file on it."
 					},
-					"extensions": {
+					"cscopeCode.extensions": {
 						"type": "string",
-						"default": "c,h",
+						"default": "c,cpp,cc,cxx,c++,hpp,hh,hxx,h",
 						"description": "Extensions to monitor their changes to update database."
 					},
-					"preview": {
+					"cscopeCode.preview": {
 						"type": "boolean",
 						"default": true,
 						"description": "Preview the result of the query."

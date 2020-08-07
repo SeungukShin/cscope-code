@@ -4,9 +4,11 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.3]
 ### Fixed
 - Fix default values for auto and preview. ([Issue #1](https://github.com/SeungukShin/cscope-code/issues/1))
+- Bumps lodash from v4.17.15 to v4.17.19. ([Pull Request #2](https://github.com/SeungukShin/cscope-code/pull/2))
+- Show result even if the search string is not found in the result. ([Pull Request #3](https://github.com/SeungukShin/cscope-code/pull/3))
 
 ## [0.0.2]
 ### Added

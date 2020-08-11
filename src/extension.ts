@@ -76,6 +76,14 @@ class CscopeQuery {
 		return this.results;
 	}
 
+	private getFullPath(file: string): string {
+		if (path.isAbsolute(file)) {
+			return file;
+		}
+		const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
+		return path.posix.join(root, file);
+	}
+
 	async setResults(output: string): Promise<void> {
 		const lines = output.split('\n');
 		for (let line of lines) {
@@ -86,15 +94,14 @@ class CscopeQuery {
 			const file_last = line.indexOf(' ');
 			const func_last = line.indexOf(' ', file_last + 1);
 			const line_last = line.indexOf(' ', func_last + 1);
-			const file = line.slice(0, file_last);
+			const file = this.getFullPath(line.slice(0, file_last));
 			const func = line.slice(file_last + 1, func_last);
 			const lnum = parseInt(line.slice(func_last + 1, line_last)) - 1;
 			const rest = line.slice(line_last + 1);
 			let text = '';
 			let cnum = 0;
 			let length = 0;
-			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
-			const uri = vscode.Uri.file(path.posix.join(root, file));
+			const uri = vscode.Uri.file(file);
 			try {
 				const f = await vscode.workspace.openTextDocument(uri);
 				text = f.lineAt(lnum).text;

@@ -172,6 +172,7 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		'include': ' -7 ',
 		'set': ' -8 '
 	};
+	private callHierarchy: vscode.Disposable | undefined;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.output = vscode.window.createOutputChannel('Cscope');
@@ -179,6 +180,7 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		this.queryResult = new CscopeQuery('', '');
 		this.history = [];
 		this.preview = undefined;
+		this.callHierarchy = undefined;
 
 		// Check Auto Build Configuration
 		if (this.config.get('auto')) {
@@ -210,6 +212,14 @@ export class Cscope implements vscode.CallHierarchyProvider {
 			if (e.affectsConfiguration('cscopeCode.auto') || e.affectsConfiguration('cscopeCode.extensions')) {
 				this.buildAuto();
 			}
+			if (e.affectsConfiguration('cscopeCode.callHierarchy')) {
+				if (this.config.get('callHierarchy')) {
+					this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', this);
+				} else {
+					this.callHierarchy?.dispose();
+					this.callHierarchy = undefined;
+				}
+			}
 		}));
 
 		// Register Commands
@@ -236,7 +246,9 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.popPosition()));
 
 		// Register CallHierarchyProvider
-		context.subscriptions.push(vscode.languages.registerCallHierarchyProvider('c', this));
+		if (this.config.get('callHierarchy')) {
+			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', this);
+		}
 	}
 
 	public dispose(): void {
@@ -244,6 +256,8 @@ export class Cscope implements vscode.CallHierarchyProvider {
 			this.fswatcher.dispose();
 			this.fswatcher = undefined;
 		}
+		this.callHierarchy?.dispose();
+		this.callHierarchy = undefined;
 	}
 
 	private async execute(command: string): Promise<{stdout: string; stderr: string}> {

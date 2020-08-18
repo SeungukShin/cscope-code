@@ -190,6 +190,11 @@
 						"type": "boolean",
 						"default": true,
 						"description": "Preview the result of the query."
+					},
+					"cscopeCode.callHierarchy": {
+						"type": "boolean",
+						"default": true,
+						"description": "Support 'Show Call Hierarchy'."
 					}
 				}
 			}

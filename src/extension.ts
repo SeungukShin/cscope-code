@@ -207,7 +207,7 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		// Register Configuration Watcher
 		context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
 			this.config = vscode.workspace.getConfiguration('cscopeCode');
-			if (e.affectsConfiguration('auto') || e.affectsConfiguration('extensions')) {
+			if (e.affectsConfiguration('cscopeCode.auto') || e.affectsConfiguration('cscopeCode.extensions')) {
 				this.buildAuto();
 			}
 		}));

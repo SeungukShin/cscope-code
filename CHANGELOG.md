@@ -7,6 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [Unreleased]
 ### Fixed
 - Fix the exception when the cscope returns the full path for result.
+- Fix the bug that 'auto' configuration is not applied without restart.
 
 ## [0.0.3]
 ### Fixed

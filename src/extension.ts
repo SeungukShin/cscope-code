@@ -252,10 +252,8 @@ export class Cscope implements vscode.CallHierarchyProvider {
 	}
 
 	public dispose(): void {
-		if (this.fswatcher != undefined) {
-			this.fswatcher.dispose();
-			this.fswatcher = undefined;
-		}
+		this.fswatcher?.dispose();
+		this.fswatcher = undefined;
 		this.callHierarchy?.dispose();
 		this.callHierarchy = undefined;
 	}

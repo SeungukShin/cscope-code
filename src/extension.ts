@@ -214,15 +214,24 @@ export class Cscope implements vscode.CallHierarchyProvider {
 
 		// Register Commands
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.build', () => this.build()));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.symbol', () => this.query('symbol')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.definition', () => this.query('definition')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.callee', () => this.query('callee')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.caller', () => this.query('caller')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.text', () => this.query('text')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.egrep', () => this.query('egrep')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.file', () => this.query('file')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include', () => this.query('include')));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set')));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.symbol', () => this.query('symbol', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.symbol.input', () => this.query('symbol', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.definition', () => this.query('definition', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.definition.input', () => this.query('definition', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.callee', () => this.query('callee', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.callee.input', () => this.query('callee', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.caller', () => this.query('caller', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.caller.input', () => this.query('caller', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.text', () => this.query('text', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.text.input', () => this.query('text', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.egrep', () => this.query('egrep', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.egrep.input', () => this.query('egrep', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.file', () => this.query('file', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.file.input', () => this.query('file', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include', () => this.query('include', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include.input', () => this.query('include', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set.input', () => this.query('set', true)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick(this.queryResult)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.popPosition()));
 
@@ -428,8 +437,11 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		prog.dispose();
 	}
 
-	private async query(option: string): Promise<void> {
-		const word = await vscode.window.showInputBox({value: this.findWord()});
+	private async query(option: string, input: boolean): Promise<void> {
+		let word: string | undefined = this.findWord();
+		if (input) {
+			word = await vscode.window.showInputBox({value: word});
+		}
 		if (!word) {
 			const msg: string = 'Cannot get pattern from the input box.';
 			this.output.appendLine(msg);

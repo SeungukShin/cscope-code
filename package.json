@@ -81,36 +81,72 @@
 				"key": "ctrl+. s"
 			},
 			{
+				"command": "extension.cscope-code.symbol.input",
+				"key": "ctrl+. shift+s"
+			},
+			{
 				"command": "extension.cscope-code.definition",
 				"key": "ctrl+. g"
+			},
+			{
+				"command": "extension.cscope-code.definition.input",
+				"key": "ctrl+. shift+g"
 			},
 			{
 				"command": "extension.cscope-code.callee",
 				"key": "ctrl+. a"
 			},
 			{
+				"command": "extension.cscope-code.callee.input",
+				"key": "ctrl+. shift+a"
+			},
+			{
 				"command": "extension.cscope-code.caller",
 				"key": "ctrl+. c"
+			},
+			{
+				"command": "extension.cscope-code.caller.input",
+				"key": "ctrl+. shift+c"
 			},
 			{
 				"command": "extension.cscope-code.text",
 				"key": "ctrl+. t"
 			},
 			{
+				"command": "extension.cscope-code.text.input",
+				"key": "ctrl+. shift+t"
+			},
+			{
 				"command": "extension.cscope-code.egrep",
 				"key": "ctrl+. e"
+			},
+			{
+				"command": "extension.cscope-code.egrep.input",
+				"key": "ctrl+. shift+e"
 			},
 			{
 				"command": "extension.cscope-code.file",
 				"key": "ctrl+. f"
 			},
 			{
+				"command": "extension.cscope-code.file.input",
+				"key": "ctrl+. shift+f"
+			},
+			{
 				"command": "extension.cscope-code.include",
 				"key": "ctrl+. i"
 			},
 			{
+				"command": "extension.cscope-code.include.input",
+				"key": "ctrl+. shift+i"
+			},
+			{
 				"command": "extension.cscope-code.set",
 				"key": "ctrl+. n"
+			},
+			{
+				"command": "extension.cscope-code.set.input",
+				"key": "ctrl+. shift+n"
 			},
 			{
 				"command": "extension.cscope-code.result",

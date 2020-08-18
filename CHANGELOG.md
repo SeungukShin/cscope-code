@@ -5,6 +5,9 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## [Unreleased]
+### Added
+- Add commands to query the word without modification.
+
 ### Fixed
 - Fix the exception when the cscope returns the full path for result.
 - Fix the bug that 'auto' configuration is not applied without restart.

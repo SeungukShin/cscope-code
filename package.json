@@ -195,6 +195,16 @@
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Show Call Hierarchy'."
+					},
+					"cscopeCode.definitions": {
+						"type": "boolean",
+						"default": true,
+						"description": "Support 'Peek Definition'."
+					},
+					"cscopeCode.references": {
+						"type": "boolean",
+						"default": true,
+						"description": "Support 'Peek References'."
 					}
 				}
 			}

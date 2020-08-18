@@ -40,6 +40,10 @@ class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
 		return this.name;
 	}
 
+	getRange(): vscode.Range {
+		return this.range;
+	}
+
 	getLineNumber(): number {
 		return this.range.start.line;
 	}
@@ -154,7 +158,7 @@ class CscopePosition {
 	}
 }
 
-export class Cscope implements vscode.CallHierarchyProvider {
+export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider, vscode.CallHierarchyProvider {
 	private output: vscode.OutputChannel;
 	private config: vscode.WorkspaceConfiguration;
 	private queryResult: CscopeQuery;
@@ -173,6 +177,8 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		'set': ' -8 '
 	};
 	private callHierarchy: vscode.Disposable | undefined;
+	private definitions: vscode.Disposable | undefined;
+	private references: vscode.Disposable | undefined;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.output = vscode.window.createOutputChannel('Cscope');
@@ -181,6 +187,8 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		this.history = [];
 		this.preview = undefined;
 		this.callHierarchy = undefined;
+		this.definitions = undefined;
+		this.references = undefined;
 
 		// Check Auto Build Configuration
 		if (this.config.get('auto')) {
@@ -220,6 +228,22 @@ export class Cscope implements vscode.CallHierarchyProvider {
 					this.callHierarchy = undefined;
 				}
 			}
+			if (e.affectsConfiguration('cscopeCode.definitions')) {
+				if (this.config.get('definitions')) {
+					this.definitions = vscode.languages.registerDefinitionProvider('c', this);
+				} else {
+					this.definitions?.dispose();
+					this.definitions = undefined;
+				}
+			}
+			if (e.affectsConfiguration('cscopeCode.references')) {
+				if (this.config.get('references')) {
+					this.references = vscode.languages.registerReferenceProvider('c', this);
+				} else {
+					this.references?.dispose();
+					this.references = undefined;
+				}
+			}
 		}));
 
 		// Register Commands
@@ -245,9 +269,15 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick(this.queryResult)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.popPosition()));
 
-		// Register CallHierarchyProvider
+		// Register Providers
 		if (this.config.get('callHierarchy')) {
 			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', this);
+		}
+		if (this.config.get('definitions')) {
+			this.definitions = vscode.languages.registerDefinitionProvider('c', this);
+		}
+		if (this.config.get('references')) {
+			this.references = vscode.languages.registerReferenceProvider('c', this);
 		}
 	}
 
@@ -256,6 +286,10 @@ export class Cscope implements vscode.CallHierarchyProvider {
 		this.fswatcher = undefined;
 		this.callHierarchy?.dispose();
 		this.callHierarchy = undefined;
+		this.definitions?.dispose();
+		this.definitions = undefined;
+		this.references?.dispose();
+		this.references = undefined;
 	}
 
 	private async execute(command: string): Promise<{stdout: string; stderr: string}> {
@@ -493,6 +527,26 @@ export class Cscope implements vscode.CallHierarchyProvider {
 			incomingCallItems.push(income);
 		}
 		return incomingCallItems;
+	}
+
+	async provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location[]> {
+		let definitions: vscode.Location[] = [];
+		await this.queryPattern('definition', this.findWord());
+		for (let result of this.queryResult.getResult()) {
+			const definition = new vscode.Location(result.getUri(), result.getRange());
+			definitions.push(definition);
+		}
+		return definitions;
+	}
+
+	async provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[]> {
+		let references: vscode.Location[] = [];
+		await this.queryPattern('symbol', this.findWord());
+		for (let result of this.queryResult.getResult()) {
+			const reference = new vscode.Location(result.getUri(), result.getRange());
+			references.push(reference);
+		}
+		return references;
 	}
 }
 

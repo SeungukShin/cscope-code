@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 - Add commands to query the word without modification.
 - Add the configuration to enable or disable 'Show Call Hierarchy'.
+- Support 'Peek Definition' and 'Peek References'.
 
 ### Fixed
 - Fix the exception when the cscope returns the full path for result.

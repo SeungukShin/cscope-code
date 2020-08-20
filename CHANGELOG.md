@@ -7,6 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [Unreleased]
 ### Added
 - Add commands to query the word with modification to command palette.
+- Add menus to the editor context menu.
 
 ## [0.0.4]
 ### Added

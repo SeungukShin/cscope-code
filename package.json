@@ -193,6 +193,40 @@
 				"key": "ctrl+. o"
 			}
 		],
+		"menus": {
+			"editor/context": [
+				{
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"command": "extension.cscope-code.definition",
+					"group": "1_Cscope@1"
+				},
+				{
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"command": "extension.cscope-code.symbol",
+					"group": "1_Cscope@2"
+				},
+				{
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"command": "extension.cscope-code.callee",
+					"group": "1_Cscope@3"
+				},
+				{
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"command": "extension.cscope-code.caller",
+					"group": "1_Cscope@4"
+				},
+				{
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"command": "extension.cscope-code.text",
+					"group": "1_Cscope@5"
+				},
+				{
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"command": "extension.cscope-code.pop",
+					"group": "1_Cscope@6"
+				}
+			]
+		},
 		"configuration": [
 			{
 				"title": "Cscope for Code",

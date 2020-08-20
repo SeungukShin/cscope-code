@@ -4,6 +4,10 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [Unreleased]
+### Added
+- Add commands to query the word with modification to command palette.
+
 ## [0.0.4]
 ### Added
 - Add commands to query the word without modification.

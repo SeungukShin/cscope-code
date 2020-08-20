@@ -31,36 +31,72 @@
 				"title": "Cscope Code: Symbol"
 			},
 			{
+				"command": "extension.cscope-code.symbol.input",
+				"title": "Cscope Code: Symbol Input"
+			},
+			{
 				"command": "extension.cscope-code.definition",
 				"title": "Cscope Code: Definition"
+			},
+			{
+				"command": "extension.cscope-code.definition.input",
+				"title": "Cscope Code: Definition Input"
 			},
 			{
 				"command": "extension.cscope-code.callee",
 				"title": "Cscope Code: Callee"
 			},
 			{
+				"command": "extension.cscope-code.callee.input",
+				"title": "Cscope Code: Callee Input"
+			},
+			{
 				"command": "extension.cscope-code.caller",
 				"title": "Cscope Code: Caller"
+			},
+			{
+				"command": "extension.cscope-code.caller.input",
+				"title": "Cscope Code: Caller Input"
 			},
 			{
 				"command": "extension.cscope-code.text",
 				"title": "Cscope Code: Text"
 			},
 			{
+				"command": "extension.cscope-code.text.input",
+				"title": "Cscope Code: Text Input"
+			},
+			{
 				"command": "extension.cscope-code.egrep",
 				"title": "Cscope Code: Pattern"
+			},
+			{
+				"command": "extension.cscope-code.egrep.input",
+				"title": "Cscope Code: Pattern Input"
 			},
 			{
 				"command": "extension.cscope-code.file",
 				"title": "Cscope Code: File"
 			},
 			{
+				"command": "extension.cscope-code.file.input",
+				"title": "Cscope Code: File Input"
+			},
+			{
 				"command": "extension.cscope-code.include",
 				"title": "Cscope Code: Include"
 			},
 			{
+				"command": "extension.cscope-code.include.input",
+				"title": "Cscope Code: Include Input"
+			},
+			{
 				"command": "extension.cscope-code.set",
 				"title": "Cscope Code: Set"
+			},
+			{
+				"command": "extension.cscope-code.set.input",
+				"title": "Cscope Code: Set Input"
 			},
 			{
 				"command": "extension.cscope-code.result",

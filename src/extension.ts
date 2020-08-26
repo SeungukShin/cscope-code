@@ -383,9 +383,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			return;
 		}
 		const file = editor.document.uri.fsPath;
-		const line = editor.selection.active.line;
-		const column = editor.selection.active.character;
-		this.history.push(new CscopePosition(file, line, column));
+		this.history.push(new CscopePosition(file, editor.selection.active));
 	}
 
 	private popPosition(): void {

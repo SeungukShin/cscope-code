@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import * as path from 'path'
-import * as cp from 'child_process'
+import * as path from 'path';
+import * as cp from 'child_process';
+import { CscopeConfig } from './cscopeConfig';
 
 class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
 	private rest: string;
@@ -160,7 +161,7 @@ class CscopePosition {
 
 export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider, vscode.CallHierarchyProvider {
 	private output: vscode.OutputChannel;
-	private config: vscode.WorkspaceConfiguration;
+	private config: CscopeConfig;
 	private queryResult: CscopeQuery;
 	private history: CscopePosition[];
 	private fswatcher: vscode.FileSystemWatcher | undefined;
@@ -182,7 +183,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 
 	constructor(context: vscode.ExtensionContext) {
 		this.output = vscode.window.createOutputChannel('Cscope');
-		this.config = vscode.workspace.getConfiguration('cscopeCode');
+		this.config = CscopeConfig.getInstance();
 		this.queryResult = new CscopeQuery('', '');
 		this.history = [];
 		this.preview = undefined;
@@ -193,7 +194,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		// Check Auto Build Configuration
 		if (this.config.get('auto')) {
 			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
-			const database = path.posix.join(root, this.config.get('database', ''));
+			const database = path.posix.join(root, this.config.get('database') || '');
 			const db = vscode.Uri.file(database);
 
 			try {
@@ -216,7 +217,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 
 		// Register Configuration Watcher
 		context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-			this.config = vscode.workspace.getConfiguration('cscopeCode');
+			this.config.reload();
 			if (e.affectsConfiguration('cscopeCode.auto') || e.affectsConfiguration('cscopeCode.extensions')) {
 				this.buildAuto();
 			}

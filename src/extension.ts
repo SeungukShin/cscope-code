@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
+import { CscopePosition } from './cscopePosition';
 
 class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
 	private rest: string;
@@ -135,30 +136,6 @@ class CscopeQuery {
 		}
 	}
 };
-
-class CscopePosition {
-	private file: string;
-	private line: number;
-	private column: number;
-
-	constructor(file: string, line: number, column: number) {
-		this.file = file;
-		this.line = line;
-		this.column = column;
-	}
-
-	getFile(): string {
-		return this.file;
-	}
-
-	getLineNumber(): number {
-		return this.line;
-	}
-
-	getColumnNumber(): number {
-		return this.column;
-	}
-}
 
 export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider, vscode.CallHierarchyProvider {
 	private config: CscopeConfig;

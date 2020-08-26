@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Add commands to query the word with modification to command palette.
 - Add menus to the editor context menu.
 - Refactoring: Add CscopeConfig class.
+- Refactoring: Add CscopeLog class.
 
 ## [0.0.4]
 ### Added

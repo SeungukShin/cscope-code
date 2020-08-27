@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as cp from 'child_process';
+import { CscopeExecute } from './cscopeExecute';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopePosition } from './cscopePosition';
@@ -271,23 +271,11 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		this.references = undefined;
 	}
 
-	private async execute(command: string): Promise<{stdout: string; stderr: string}> {
-		return new Promise<{stdout: string; stderr: string}>((resolve, reject) => {
-			cp.exec(command, {cwd: vscode.workspace.rootPath}, (error, stdout, stderr) => {
-				if (error) {
-					reject({stdout, stderr});
-				} else {
-					resolve({stdout, stderr});
-				}
-			});
-		});
-	}
-
 	private async build(): Promise<void> {
 		const cmd: string = this.config.get('build') + ' -f ' + this.config.get('database');
 		this.log.message(cmd);
 		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
-		await this.execute(cmd).then(({stdout, stderr}) => {
+		await CscopeExecute.execute(cmd).then(({stdout, stderr}) => {
 			const msg: string = '"' + this.config.get('database') + '" is updated.'
 			this.log.message(msg);
 			vscode.window.setStatusBarMessage(msg, 5000);
@@ -412,7 +400,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		this.log.message(cmd);
 		const prog = vscode.window.setStatusBarMessage('Querying "' + pattern + '"...');
 		let output = '';
-		await this.execute(cmd).then(({stdout, stderr}) => {
+		await CscopeExecute.execute(cmd).then(({stdout, stderr}) => {
 			this.queryResult = new CscopeQuery(option, pattern);
 			this.log.message(stdout);
 			output = stdout;

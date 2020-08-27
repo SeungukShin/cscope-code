@@ -341,39 +341,6 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		return document.getText(range);
 	}
 
-	private moveCursor(file: string, line: number, column: number, preview: boolean = false): void {
-		vscode.workspace.openTextDocument(file).then((f: vscode.TextDocument) => {
-			const range: vscode.Range = new vscode.Range(line, column, line, column);
-			let option: vscode.TextDocumentShowOptions = {
-				preserveFocus: false,
-				preview: false,
-				selection: range,
-				viewColumn: vscode.ViewColumn.Active
-			};
-			if (preview) {
-				option.preserveFocus = true;
-				option.preview = true;
-				option.viewColumn = vscode.ViewColumn.Beside;
-			}
-			vscode.window.showTextDocument(f, option).then((e: vscode.TextEditor) => {
-				if (preview) {
-					if (this.preview != undefined && this.preview != e) {
-						this.preview.hide();
-					}
-					this.preview = e;
-				}
-			}), ((error: any) => {
-				const msg: string = 'Cannot show "' + file + '".';
-				this.log.message(msg);
-				vscode.window.showInformationMessage(msg);
-				});
-		}), ((error: any) => {
-			const msg: string = 'Cannot open "' + file + '".';
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-		});
-	}
-
 	private pushPosition(): void {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
@@ -401,7 +368,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			vscode.window.showInformationMessage(msg);
 			return;
 		}
-		this.moveCursor(pos.getFile(), pos.getLineNumber(), pos.getColumnNumber());
+		pos.go();
 	}
 
 	private quickPick(result: CscopeQuery): void {
@@ -421,7 +388,10 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			quickPick.onDidChangeActive(() => {
 				const item: CscopeItem = quickPick.activeItems[0];
 				if (item) {
-					this.moveCursor(item.getFile(), item.getLineNumber(), item.getColumnNumber(), true);
+					const position = new CscopePosition(item.getFile(), item.getRange().start);
+					position.go(true).then((e: vscode.TextEditor | undefined) => {
+						this.preview = e;
+					});
 				}
 			});
 		}
@@ -429,7 +399,8 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			const item: CscopeItem = quickPick.selectedItems[0];
 			if (item) {
 				this.pushPosition();
-				this.moveCursor(item.getFile(), item.getLineNumber(), item.getColumnNumber());
+				const position = new CscopePosition(item.getFile(), item.getRange().start);
+				position.go();
 			}
 			quickPick.hide();
 		});

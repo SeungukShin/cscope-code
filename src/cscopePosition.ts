@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
+import { CscopeLog } from './cscopeLog';
 
 export class CscopePosition {
+    private log: CscopeLog;
     private file: string;
     private position: vscode.Position;
 
     constructor(file: string, position: vscode.Position) {
+        this.log = CscopeLog.getInstance();
         this.file = file;
         this.position = position;
     }
@@ -23,5 +26,39 @@ export class CscopePosition {
 
 	getColumnNumber(): number {
 		return this.position.character;
+	}
+
+	go(preview: boolean = false): Promise<vscode.TextEditor | undefined> {
+        return new Promise<vscode.TextEditor | undefined>(async (resolve, reject) => {
+            // open a document
+            vscode.workspace.openTextDocument(this.file).then((f: vscode.TextDocument) => {
+                const range: vscode.Range = new vscode.Range(this.position, this.position);
+                let option: vscode.TextDocumentShowOptions = {
+                    preserveFocus: false,
+                    preview: false,
+                    selection: range,
+                    viewColumn: vscode.ViewColumn.Active
+                };
+                if (preview) {
+                    option.preserveFocus = true;
+                    option.preview = true;
+                    option.viewColumn = vscode.ViewColumn.Beside;
+                }
+                // open an editor
+                vscode.window.showTextDocument(f, option).then((e: vscode.TextEditor) => {
+                    resolve(e);
+                }), ((error: any) => {
+                    const msg: string = 'Cannot show "' + this.file + '".';
+                    this.log.message(msg);
+                    vscode.window.showInformationMessage(msg);
+                    reject(undefined);
+                });
+            }), ((error: any) => {
+                const msg: string = 'Cannot open "' + this.file + '".';
+                this.log.message(msg);
+                vscode.window.showInformationMessage(msg);
+                reject(undefined);
+            });
+        });
 	}
 }

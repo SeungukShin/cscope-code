@@ -8,8 +8,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 - Add commands to query the word with modification to command palette.
 - Add menus to the editor context menu.
-- Refactoring: Add CscopeExecute, CscopeConfig, CscopeLog and CscopeHistory class.
-- Refactoring: Split CscopePosition class and move some functionality.
+- Refactoring: Add CscopeExecute, CscopeConfig, CscopeLog and CscopeHistory classes.
+- Refactoring: Split CscopeItem, CscopeQuery and CscopePosition classes and move some functionalities.
 
 ## [0.0.4]
 ### Added

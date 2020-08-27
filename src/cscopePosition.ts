@@ -6,9 +6,21 @@ export class CscopePosition {
     private file: string;
     private position: vscode.Position;
 
-    constructor(file: string, position: vscode.Position) {
+    constructor(file: string | undefined = undefined, position: vscode.Position | undefined = undefined) {
         this.log = CscopeLog.getInstance();
+        const editor = vscode.window.activeTextEditor;
+        if (file == undefined) {
+            if (editor == undefined) {
+                const msg: string = 'Cannot find Active Text Editor.';
+                this.log.message(msg);
+                vscode.window.showInformationMessage(msg);
+            }
+            file = editor!.document.uri.fsPath;
+        }
         this.file = file;
+        if (position == undefined) {
+            position = editor!.selection.active;
+        }
         this.position = position;
     }
 

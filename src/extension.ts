@@ -4,6 +4,7 @@ import { CscopeExecute } from './cscopeExecute';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopePosition } from './cscopePosition';
+import { CscopeHistory } from './cscopeHistory';
 
 class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
 	private rest: string;
@@ -141,7 +142,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 	private config: CscopeConfig;
 	private log: CscopeLog;
 	private queryResult: CscopeQuery;
-	private history: CscopePosition[];
+	private history: CscopeHistory;
 	private fswatcher: vscode.FileSystemWatcher | undefined;
 	private preview: vscode.TextEditor | undefined;
 	private option: Record<string, string> = {
@@ -163,7 +164,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		this.config = CscopeConfig.getInstance();
 		this.log = CscopeLog.getInstance();
 		this.queryResult = new CscopeQuery('', '');
-		this.history = [];
+		this.history = new CscopeHistory();
 		this.preview = undefined;
 		this.callHierarchy = undefined;
 		this.definitions = undefined;
@@ -246,7 +247,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set', false)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set.input', () => this.query('set', true)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick(this.queryResult)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.popPosition()));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.pop()));
 
 		// Register Providers
 		if (this.config.get('callHierarchy')) {
@@ -329,34 +330,9 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		return document.getText(range);
 	}
 
-	private pushPosition(): void {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			const msg: string = 'Cannot find Active Text Editor.';
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-			return;
-		}
-		const file = editor.document.uri.fsPath;
-		this.history.push(new CscopePosition(file, editor.selection.active));
-	}
-
-	private popPosition(): void {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			const msg: string = 'Cannot find Active Text Editor.';
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-			return;
-		}
-		const pos = this.history.pop();
-		if (!pos) {
-			const msg: string = 'End of History.';
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-			return;
-		}
-		pos.go();
+	pop(): void {
+		const position = this.history.pop();
+		position?.go();
 	}
 
 	private quickPick(result: CscopeQuery): void {
@@ -386,7 +362,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		quickPick.onDidAccept(() => {
 			const item: CscopeItem = quickPick.selectedItems[0];
 			if (item) {
-				this.pushPosition();
+				this.history.push()
 				const position = new CscopePosition(item.getFile(), item.getRange().start);
 				position.go();
 			}

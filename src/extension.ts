@@ -3,28 +3,15 @@ import * as path from 'path';
 import { CscopeExecute } from './cscopeExecute';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
-import { CscopePosition } from './cscopePosition';
 import { CscopeHistory } from './cscopeHistory';
-import { CscopeItem, CscopeQuery } from './cscopeQuery';
+import { CscopeQuery } from './cscopeQuery';
 
 export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider, vscode.CallHierarchyProvider {
 	private config: CscopeConfig;
 	private log: CscopeLog;
-	private queryResult: CscopeQuery;
+	private cscopeQuery: CscopeQuery;
 	private history: CscopeHistory;
 	private fswatcher: vscode.FileSystemWatcher | undefined;
-	private preview: vscode.TextEditor | undefined;
-	private option: Record<string, string> = {
-		'symbol': ' -0 ',
-		'definition': ' -1 ',
-		'callee': ' -2 ',
-		'caller': ' -3 ',
-		'text': ' -4 ',
-		'egrep': ' -5 ',
-		'file': ' -6 ',
-		'include': ' -7 ',
-		'set': ' -8 '
-	};
 	private callHierarchy: vscode.Disposable | undefined;
 	private definitions: vscode.Disposable | undefined;
 	private references: vscode.Disposable | undefined;
@@ -32,9 +19,8 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 	constructor(context: vscode.ExtensionContext) {
 		this.config = CscopeConfig.getInstance();
 		this.log = CscopeLog.getInstance();
-		this.queryResult = new CscopeQuery('', '');
+		this.cscopeQuery = new CscopeQuery('', '');
 		this.history = new CscopeHistory();
-		this.preview = undefined;
 		this.callHierarchy = undefined;
 		this.definitions = undefined;
 		this.references = undefined;
@@ -115,7 +101,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include.input', () => this.query('include', true)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set', false)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set.input', () => this.query('set', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick(this.queryResult)));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.cscopeQuery.quickPick()));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.pop()));
 
 		// Register Providers
@@ -130,7 +116,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		}
 	}
 
-	public dispose(): void {
+	dispose(): void {
 		this.fswatcher?.dispose();
 		this.fswatcher = undefined;
 		this.callHierarchy?.dispose();
@@ -145,21 +131,17 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		const cmd: string = this.config.get('build') + ' -f ' + this.config.get('database');
 		this.log.message(cmd);
 		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
-		await CscopeExecute.execute(cmd).then(({stdout, stderr}) => {
+		try {
+			let {stdout, stderr} = await CscopeExecute.execute(cmd);
 			const msg: string = '"' + this.config.get('database') + '" is updated.'
 			this.log.message(msg);
 			vscode.window.setStatusBarMessage(msg, 5000);
-		}, ({stdout, stderr}) => {
+		} catch ({stdout, stderr}) {
 			const msg: string = 'Error occurred while updating "' + this.config.get('database') + '".'
 			this.log.message(msg);
 			vscode.window.showInformationMessage(msg);
 			this.log.message(stderr);
-		}).catch(({stdout, stderr}) => {
-			const msg: string = 'Exception occurred while updating "' + this.config.get('database') + '".'
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-			this.log.message(stderr);
-		});
+		}
 		prog.dispose();
 	}
 
@@ -204,66 +186,6 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		position?.go();
 	}
 
-	private quickPick(result: CscopeQuery): void {
-		if (result.getPattern() == '') {
-			return;
-		}
-		const quickPick = vscode.window.createQuickPick<CscopeItem>();
-		quickPick.items = result.getResult();
-		quickPick.onDidHide(() => {
-			if (this.preview != undefined) {
-				this.preview.hide();
-				this.preview = undefined;
-			}
-			quickPick.dispose();
-		});
-		if (this.config.get('preview')) {
-			quickPick.onDidChangeActive(() => {
-				const item: CscopeItem = quickPick.activeItems[0];
-				if (item) {
-					const position = new CscopePosition(item.getFile(), item.getRange().start);
-					position.go(true).then((e: vscode.TextEditor | undefined) => {
-						this.preview = e;
-					});
-				}
-			});
-		}
-		quickPick.onDidAccept(() => {
-			const item: CscopeItem = quickPick.selectedItems[0];
-			if (item) {
-				this.history.push()
-				const position = new CscopePosition(item.getFile(), item.getRange().start);
-				position.go();
-			}
-			quickPick.hide();
-		});
-		quickPick.show();
-	}
-
-	private async queryPattern(option: string, pattern: string): Promise<void> {
-		const cmd: string = this.config.get('query') + ' -f ' + this.config.get('database') + this.option[option] + pattern;
-		this.log.message(cmd);
-		const prog = vscode.window.setStatusBarMessage('Querying "' + pattern + '"...');
-		let output = '';
-		await CscopeExecute.execute(cmd).then(({stdout, stderr}) => {
-			this.queryResult = new CscopeQuery(option, pattern);
-			this.log.message(stdout);
-			output = stdout;
-		}, ({stdout, stderr}) => {
-			const msg: string = 'Error occurred while querying: "' + cmd + '".';
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-			this.log.message(stderr);
-		}).catch(({stdout, stderr}) => {
-			const msg: string = 'Exception occurred while querying: "' + cmd + '".';
-			this.log.message(msg);
-			vscode.window.showInformationMessage(msg);
-			this.log.message(stderr);
-		});
-		await this.queryResult.setResults(output);
-		prog.dispose();
-	}
-
 	private async query(option: string, input: boolean): Promise<void> {
 		let word: string | undefined = this.findWord();
 		if (input) {
@@ -275,8 +197,13 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			vscode.window.showInformationMessage(msg);
 			return;
 		}
-		await this.queryPattern(option, word);
-		this.quickPick(this.queryResult);
+		this.cscopeQuery = new CscopeQuery(option, word);
+		await this.cscopeQuery.query();
+		const position = await this.cscopeQuery.quickPick();
+		if (position != undefined) {
+			this.history.push();
+			position.go();
+		}
 	}
 
 	prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CallHierarchyItem | undefined {
@@ -289,45 +216,27 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 	}
 
 	async provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyOutgoingCall[] | undefined> {
-		let document = await vscode.workspace.openTextDocument(item.uri);
-		let outgoingCallItems: vscode.CallHierarchyOutgoingCall[] = [];
-		await this.queryPattern('callee', item.name);
-		for (let result of this.queryResult.getResult()) {
-			const outgo = new vscode.CallHierarchyOutgoingCall(result, [result.range]);
-			outgoingCallItems.push(outgo);
-		}
-		return outgoingCallItems;
+		this.cscopeQuery = new CscopeQuery('callee', item.name);
+		await this.cscopeQuery.query();
+		return this.cscopeQuery.getCallHierarchy(vscode.CallHierarchyOutgoingCall);
 	}
 
 	async provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyIncomingCall[]> {
-		let document = await vscode.workspace.openTextDocument(item.uri);
-		let incomingCallItems: vscode.CallHierarchyIncomingCall[] = [];
-		await this.queryPattern('caller', item.name);
-		for (let result of this.queryResult.getResult()) {
-			const income = new vscode.CallHierarchyIncomingCall(result, [result.range]);
-			incomingCallItems.push(income);
-		}
-		return incomingCallItems;
+		this.cscopeQuery = new CscopeQuery('caller', item.name);
+		await this.cscopeQuery.query();
+		return this.cscopeQuery.getCallHierarchy(vscode.CallHierarchyIncomingCall);
 	}
 
 	async provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location[]> {
-		let definitions: vscode.Location[] = [];
-		await this.queryPattern('definition', this.findWord());
-		for (let result of this.queryResult.getResult()) {
-			const definition = new vscode.Location(result.getUri(), result.getRange());
-			definitions.push(definition);
-		}
-		return definitions;
+		this.cscopeQuery = new CscopeQuery('definition', this.findWord());
+		await this.cscopeQuery.query();
+		return this.cscopeQuery.getLocations();
 	}
 
 	async provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[]> {
-		let references: vscode.Location[] = [];
-		await this.queryPattern('symbol', this.findWord());
-		for (let result of this.queryResult.getResult()) {
-			const reference = new vscode.Location(result.getUri(), result.getRange());
-			references.push(reference);
-		}
-		return references;
+		this.cscopeQuery = new CscopeQuery('symbol', this.findWord());
+		await this.cscopeQuery.query();
+		return this.cscopeQuery.getLocations();
 	}
 }
 

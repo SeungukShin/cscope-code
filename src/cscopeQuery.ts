@@ -167,18 +167,18 @@ export class CscopeQuery {
 
 	async query(): Promise<void> {
 		const cmd: string = this.config.get('query') + ' -f ' + this.config.get('database') + this.option[this.type] + this.pattern;
-		this.log.message(cmd);
+		this.log.info(cmd);
 		const prog = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
 		let output = '';
 		try {
 			let {stdout, stderr} = await CscopeExecute.execute(cmd);
-			this.log.message(stdout);
+			this.log.info(stdout);
 			output = stdout;
 		} catch ({stdout, stderr}) {
 			const msg: string = 'Error occurred while querying: "' + cmd + '".';
-			this.log.message(msg);
+			this.log.err(msg);
 			vscode.window.showInformationMessage(msg);
-			this.log.message(stderr);
+			this.log.err(stderr);
 		}
 		await this.setResults(output);
 		prog.dispose();

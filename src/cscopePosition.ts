@@ -12,7 +12,7 @@ export class CscopePosition {
 		if (file == undefined) {
 			if (editor == undefined) {
 				const msg: string = 'Cannot find Active Text Editor.';
-				this.log.message(msg);
+				this.log.err(msg);
 				vscode.window.showInformationMessage(msg);
 			}
 			file = editor!.document.uri.fsPath;
@@ -61,13 +61,13 @@ export class CscopePosition {
 					resolve(e);
 				}), ((error: any) => {
 					const msg: string = 'Cannot show "' + this.file + '".';
-					this.log.message(msg);
+					this.log.err(msg);
 					vscode.window.showInformationMessage(msg);
 					reject(undefined);
 				});
 			}), ((error: any) => {
 				const msg: string = 'Cannot open "' + this.file + '".';
-				this.log.message(msg);
+				this.log.err(msg);
 				vscode.window.showInformationMessage(msg);
 				reject(undefined);
 			});

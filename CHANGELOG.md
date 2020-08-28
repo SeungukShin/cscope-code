@@ -10,6 +10,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Add menus to the editor context menu.
 - Refactoring: Add CscopeExecute, CscopeConfig, CscopeLog and CscopeHistory classes.
 - Refactoring: Split CscopeItem, CscopeQuery and CscopePosition classes and move some functionalities.
+- Split log level.
 
 ## [0.0.4]
 ### Added

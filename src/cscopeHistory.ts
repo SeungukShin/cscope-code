@@ -23,7 +23,7 @@ export class CscopeHistory {
 		const position = this.history.pop();
 		if (!position) {
 			const msg: string = 'End of History.';
-			this.log.message(msg);
+			this.log.warn(msg);
 			vscode.window.showInformationMessage(msg);
 		}
 		return position;

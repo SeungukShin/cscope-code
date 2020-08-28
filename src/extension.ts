@@ -34,15 +34,15 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			try {
 				vscode.workspace.fs.stat(db).then((stat) => {
 					const msg: string = '"' + db + '"' + ' exists.';
-					this.log.message(msg);
+					this.log.info(msg);
 				}, (stat) => {
 					const msg: string = '"' + db + '"' + ' does not exist.';
-					this.log.message(msg);
+					this.log.info(msg);
 					this.build();
 				});
 			} catch {
 				const msg: string = 'Exception occured while checking "' + db + '".';
-				this.log.message(msg);
+				this.log.err(msg);
 				vscode.window.showInformationMessage(msg);
 				this.build();
 			}
@@ -129,18 +129,18 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 
 	private async build(): Promise<void> {
 		const cmd: string = this.config.get('build') + ' -f ' + this.config.get('database');
-		this.log.message(cmd);
+		this.log.info(cmd);
 		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
 		try {
 			let {stdout, stderr} = await CscopeExecute.execute(cmd);
 			const msg: string = '"' + this.config.get('database') + '" is updated.'
-			this.log.message(msg);
+			this.log.info(msg);
 			vscode.window.setStatusBarMessage(msg, 5000);
 		} catch ({stdout, stderr}) {
 			const msg: string = 'Error occurred while updating "' + this.config.get('database') + '".'
-			this.log.message(msg);
+			this.log.err(msg);
 			vscode.window.showInformationMessage(msg);
-			this.log.message(stderr);
+			this.log.err(stderr);
 		}
 		prog.dispose();
 	}
@@ -153,7 +153,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		if (this.config.get('auto')) {
 			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
 			const pattern: string = path.posix.join(root, '**/*.{' + this.config.get('extensions') + '}');
-			this.log.message('Register Auto Build Pattern: "' + pattern + '"');
+			this.log.info('Register Auto Build Pattern: "' + pattern + '"');
 			this.fswatcher = vscode.workspace.createFileSystemWatcher(pattern);
 			this.fswatcher.onDidChange(() => this.build());
 			this.fswatcher.onDidCreate(() => this.build());
@@ -165,7 +165,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			const msg: string = 'Cannot find Active Text Editor.';
-			this.log.message(msg);
+			this.log.err(msg);
 			vscode.window.showInformationMessage(msg);
 			return '';
 		}
@@ -193,7 +193,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		}
 		if (!word) {
 			const msg: string = 'Cannot get pattern from the input box.';
-			this.log.message(msg);
+			this.log.err(msg);
 			vscode.window.showInformationMessage(msg);
 			return;
 		}

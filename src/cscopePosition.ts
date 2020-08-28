@@ -2,35 +2,35 @@ import * as vscode from 'vscode';
 import { CscopeLog } from './cscopeLog';
 
 export class CscopePosition {
-    private log: CscopeLog;
-    private file: string;
-    private position: vscode.Position;
+	private log: CscopeLog;
+	private file: string;
+	private position: vscode.Position;
 
-    constructor(file: string | undefined = undefined, position: vscode.Position | undefined = undefined) {
-        this.log = CscopeLog.getInstance();
-        const editor = vscode.window.activeTextEditor;
-        if (file == undefined) {
-            if (editor == undefined) {
-                const msg: string = 'Cannot find Active Text Editor.';
-                this.log.message(msg);
-                vscode.window.showInformationMessage(msg);
-            }
-            file = editor!.document.uri.fsPath;
-        }
-        this.file = file;
-        if (position == undefined) {
-            position = editor!.selection.active;
-        }
-        this.position = position;
-    }
+	constructor(file: string | undefined = undefined, position: vscode.Position | undefined = undefined) {
+		this.log = CscopeLog.getInstance();
+		const editor = vscode.window.activeTextEditor;
+		if (file == undefined) {
+			if (editor == undefined) {
+				const msg: string = 'Cannot find Active Text Editor.';
+				this.log.message(msg);
+				vscode.window.showInformationMessage(msg);
+			}
+			file = editor!.document.uri.fsPath;
+		}
+		this.file = file;
+		if (position == undefined) {
+			position = editor!.selection.active;
+		}
+		this.position = position;
+	}
 
 	getFile(): string {
 		return this.file;
 	}
 
-    getPosition(): vscode.Position {
-        return this.position;
-    }
+	getPosition(): vscode.Position {
+		return this.position;
+	}
 
 	getLineNumber(): number {
 		return this.position.line;
@@ -40,37 +40,37 @@ export class CscopePosition {
 		return this.position.character;
 	}
 
-	go(preview: boolean = false): Promise<vscode.TextEditor | undefined> {
-        return new Promise<vscode.TextEditor | undefined>(async (resolve, reject) => {
-            // open a document
-            vscode.workspace.openTextDocument(this.file).then((f: vscode.TextDocument) => {
-                const range: vscode.Range = new vscode.Range(this.position, this.position);
-                let option: vscode.TextDocumentShowOptions = {
-                    preserveFocus: false,
-                    preview: false,
-                    selection: range,
-                    viewColumn: vscode.ViewColumn.Active
-                };
-                if (preview) {
-                    option.preserveFocus = true;
-                    option.preview = true;
-                    option.viewColumn = vscode.ViewColumn.Beside;
-                }
-                // open an editor
-                vscode.window.showTextDocument(f, option).then((e: vscode.TextEditor) => {
-                    resolve(e);
-                }), ((error: any) => {
-                    const msg: string = 'Cannot show "' + this.file + '".';
-                    this.log.message(msg);
-                    vscode.window.showInformationMessage(msg);
-                    reject(undefined);
-                });
-            }), ((error: any) => {
-                const msg: string = 'Cannot open "' + this.file + '".';
-                this.log.message(msg);
-                vscode.window.showInformationMessage(msg);
-                reject(undefined);
-            });
-        });
+	async go(preview: boolean = false): Promise<vscode.TextEditor | undefined> {
+		return new Promise<vscode.TextEditor | undefined>(async (resolve, reject) => {
+			// open a document
+			vscode.workspace.openTextDocument(this.file).then((f: vscode.TextDocument) => {
+				const range: vscode.Range = new vscode.Range(this.position, this.position);
+				let option: vscode.TextDocumentShowOptions = {
+					preserveFocus: false,
+					preview: false,
+					selection: range,
+					viewColumn: vscode.ViewColumn.Active
+				};
+				if (preview) {
+					option.preserveFocus = true;
+					option.preview = true;
+					option.viewColumn = vscode.ViewColumn.Beside;
+				}
+				// open an editor
+				vscode.window.showTextDocument(f, option).then((e: vscode.TextEditor) => {
+					resolve(e);
+				}), ((error: any) => {
+					const msg: string = 'Cannot show "' + this.file + '".';
+					this.log.message(msg);
+					vscode.window.showInformationMessage(msg);
+					reject(undefined);
+				});
+			}), ((error: any) => {
+				const msg: string = 'Cannot open "' + this.file + '".';
+				this.log.message(msg);
+				vscode.window.showInformationMessage(msg);
+				reject(undefined);
+			});
+		});
 	}
 }

@@ -5,7 +5,7 @@ import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopePosition } from './cscopePosition';
 
-export class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
+class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyItem {
 	private rest: string;
 	private text: string;
 	// for QuickPickItem
@@ -61,12 +61,12 @@ export class CscopeItem implements vscode.QuickPickItem, vscode.CallHierarchyIte
 }
 
 export class CscopeQuery {
-    private config: CscopeConfig;
-    private log: CscopeLog;
+	private config: CscopeConfig;
+	private log: CscopeLog;
 	private type: string;
 	private pattern: string;
-    private results: CscopeItem[];
-    private preview: vscode.TextEditor | undefined;
+	private results: CscopeItem[];
+	private preview: vscode.TextEditor | undefined;
 	private option: Record<string, string> = {
 		'symbol': ' -0 ',
 		'definition': ' -1 ',
@@ -80,8 +80,8 @@ export class CscopeQuery {
 	};
 
 	constructor(type: string, pattern: string) {
-        this.config = CscopeConfig.getInstance();
-        this.log = CscopeLog.getInstance();
+		this.config = CscopeConfig.getInstance();
+		this.log = CscopeLog.getInstance();
 		this.type = type;
 		this.pattern = pattern;
 		this.results = [];
@@ -95,25 +95,25 @@ export class CscopeQuery {
 		return this.pattern;
 	}
 
-    getLocations(): vscode.Location[] {
-        let locations: vscode.Location[] = [];
-        for (let result of this.results) {
-            const location = new vscode.Location(result.getUri(), result.getRange());
-            locations.push(location);
-        }
-        return locations;
-    }
+	getLocations(): vscode.Location[] {
+		let locations: vscode.Location[] = [];
+		for (let result of this.results) {
+			const location = new vscode.Location(result.getUri(), result.getRange());
+			locations.push(location);
+		}
+		return locations;
+	}
 
-    getCallHierarchy<T>(type: (new (item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) => T)): T[] {
-        let items: T[] = [];
-        for (let result of this.results) {
-            const item = new type(result, [result.range]);
-            items.push(item);
-        }
-        return items;
-    }
+	getCallHierarchy<T>(type: (new (item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) => T)): T[] {
+		let items: T[] = [];
+		for (let result of this.results) {
+			const item = new type(result, [result.range]);
+			items.push(item);
+		}
+		return items;
+	}
 
-    private getFullPath(file: string): string {
+	private getFullPath(file: string): string {
 		if (path.isAbsolute(file)) {
 			return file;
 		}
@@ -121,7 +121,7 @@ export class CscopeQuery {
 		return path.posix.join(root, file);
 	}
 
-	async setResults(output: string): Promise<void> {
+	private async setResults(output: string): Promise<void> {
 		const lines = output.split('\n');
 		for (let line of lines) {
 			if (line.length < 3) {
@@ -170,56 +170,56 @@ export class CscopeQuery {
 		const cmd: string = this.config.get('query') + ' -f ' + this.config.get('database') + this.option[this.type] + this.pattern;
 		this.log.message(cmd);
 		const prog = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
-        let output = '';
-        try {
-            let {stdout, stderr} = await CscopeExecute.execute(cmd);
+		let output = '';
+		try {
+			let {stdout, stderr} = await CscopeExecute.execute(cmd);
 			this.log.message(stdout);
 			output = stdout;
-        } catch ({stdout, stderr}) {
+		} catch ({stdout, stderr}) {
 			const msg: string = 'Error occurred while querying: "' + cmd + '".';
 			this.log.message(msg);
 			vscode.window.showInformationMessage(msg);
 			this.log.message(stderr);
-        }
+		}
 		await this.setResults(output);
 		prog.dispose();
 	}
 
 	async quickPick(): Promise<CscopePosition | undefined> {
-        return new Promise<CscopePosition | undefined>((resolve, reject) => {
-            if (this.pattern == '') {
-                reject(undefined);
-            }
-            const quickPick = vscode.window.createQuickPick<CscopeItem>();
-            quickPick.items = this.results;
-            quickPick.onDidAccept(() => {
-                const item: CscopeItem = quickPick.selectedItems[0];
-                if (item) {
-                    const position = new CscopePosition(item.getFile(), item.getRange().start);
-                    resolve(position);
-                }
-                quickPick.hide();
-            });
-            quickPick.onDidHide(() => {
-                if (this.preview != undefined) {
-                    this.preview.hide();
-                    this.preview = undefined;
-                }
-                quickPick.dispose();
-                reject(undefined);
-            });
-            if (this.config.get('preview')) {
-                quickPick.onDidChangeActive(() => {
-                    const item: CscopeItem = quickPick.activeItems[0];
-                    if (item) {
-                        const position = new CscopePosition(item.getFile(), item.getRange().start);
-                        position.go(true).then((e: vscode.TextEditor | undefined) => {
-                            this.preview = e;
-                        });
-                    }
-                });
-            }
-            quickPick.show();
-        });
+		return new Promise<CscopePosition | undefined>((resolve, reject) => {
+			if (this.pattern == '') {
+				reject(undefined);
+			}
+			const quickPick = vscode.window.createQuickPick<CscopeItem>();
+			quickPick.items = this.results;
+			quickPick.onDidAccept(() => {
+				const item: CscopeItem = quickPick.selectedItems[0];
+				if (item) {
+					const position = new CscopePosition(item.getFile(), item.getRange().start);
+					resolve(position);
+				}
+				quickPick.hide();
+			});
+			quickPick.onDidHide(() => {
+				if (this.preview != undefined) {
+					this.preview.hide();
+					this.preview = undefined;
+				}
+				quickPick.dispose();
+				reject(undefined);
+			});
+			if (this.config.get('preview')) {
+				quickPick.onDidChangeActive(() => {
+					const item: CscopeItem = quickPick.activeItems[0];
+					if (item) {
+						const position = new CscopePosition(item.getFile(), item.getRange().start);
+						position.go(true).then((e: vscode.TextEditor | undefined) => {
+							this.preview = e;
+						});
+					}
+				});
+			}
+			quickPick.show();
+		});
 	}
 }

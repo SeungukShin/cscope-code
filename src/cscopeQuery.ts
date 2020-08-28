@@ -124,17 +124,16 @@ export class CscopeQuery {
 	private async setResults(output: string): Promise<void> {
 		const lines = output.split('\n');
 		for (let line of lines) {
-			if (line.length < 3) {
+			// TODO: what if file name contains a space?
+			// line format: (filename) (function) (line number) (content)
+			const tokens = line.match(/([^ ]*) +([^ ]*) +([^ ]*) (.*)/);
+			if (tokens == null || tokens.length < 5) {
 				continue;
 			}
-			// TODO: what if file name contains a space?
-			const file_last = line.indexOf(' ');
-			const func_last = line.indexOf(' ', file_last + 1);
-			const line_last = line.indexOf(' ', func_last + 1);
-			const file = this.getFullPath(line.slice(0, file_last));
-			const func = line.slice(file_last + 1, func_last);
-			const lnum = parseInt(line.slice(func_last + 1, line_last)) - 1;
-			const rest = line.slice(line_last + 1);
+			const file = this.getFullPath(tokens[1]);
+			const func = tokens[2];
+			const lnum = parseInt(tokens[3]) - 1;
+			const rest = tokens[4];
 			let text = '';
 			let cnum = 0;
 			let length = 0;

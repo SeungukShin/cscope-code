@@ -171,7 +171,7 @@ export class CscopeQuery {
 		const prog = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
 		let output = '';
 		try {
-			let {stdout, stderr} = await CscopeExecute.execute(cmd);
+			let {stdout, stderr} = await CscopeExecute.exec(cmd);
 			this.log.info(stdout);
 			output = stdout;
 		} catch ({stdout, stderr}) {

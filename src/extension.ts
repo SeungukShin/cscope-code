@@ -132,7 +132,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		this.log.info(cmd);
 		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
 		try {
-			let {stdout, stderr} = await CscopeExecute.execute(cmd);
+			let {stdout, stderr} = await CscopeExecute.exec(cmd);
 			const msg: string = '"' + this.config.get('database') + '" is updated.'
 			this.log.info(msg);
 			vscode.window.setStatusBarMessage(msg, 5000);

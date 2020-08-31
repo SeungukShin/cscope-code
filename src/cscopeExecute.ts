@@ -3,7 +3,7 @@ import * as cp from 'child_process';
 import { CscopeConfig } from './cscopeConfig';
 
 export abstract class CscopeExecute {
-	static async execute(command: string): Promise<{stdout: string; stderr: string}> {
+	static async exec(command: string): Promise<{stdout: string; stderr: string}> {
 		const config = CscopeConfig.getInstance();
 		let max: number | undefined = config.get('maxBuffer');
 		if (max != undefined) {

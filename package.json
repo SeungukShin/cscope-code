@@ -231,15 +231,20 @@
 			{
 				"title": "Cscope for Code",
 				"properties": {
-					"cscopeCode.build": {
+					"cscopeCode.cscope": {
 						"type": "string",
-						"default": "cscope -RbU",
-						"description": "Command to build a cscope database."
+						"default": "cscope",
+						"description": "Command for cscope."
 					},
-					"cscopeCode.query": {
+					"cscopeCode.buildArgs": {
 						"type": "string",
-						"default": "cscope -RdL",
-						"description": "Command to query a symbol."
+						"default": "-RbU",
+						"description": "Arguments to build a cscope database."
+					},
+					"cscopeCode.queryArgs": {
+						"type": "string",
+						"default": "-RdL",
+						"description": "Arguments to query a symbol."
 					},
 					"cscopeCode.database": {
 						"type": "string",

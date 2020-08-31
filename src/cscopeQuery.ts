@@ -166,7 +166,7 @@ export class CscopeQuery {
 	}
 
 	async query(): Promise<void> {
-		const cmd: string = this.config.get('query') + ' -f ' + this.config.get('database') + this.option[this.type] + this.pattern;
+		const cmd: string = this.config.get('cscope') + ' ' + this.config.get('queryArgs') + ' -f ' + this.config.get('database') + this.option[this.type] + this.pattern;
 		this.log.info(cmd);
 		const prog = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
 		let output = '';

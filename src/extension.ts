@@ -128,7 +128,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 	}
 
 	private async build(): Promise<void> {
-		const cmd: string = this.config.get('build') + ' -f ' + this.config.get('database');
+		const cmd: string = this.config.get('cscope') + ' ' + this.config.get('buildArgs') + ' -f ' + this.config.get('database');
 		this.log.info(cmd);
 		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
 		try {

@@ -12,6 +12,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Refactoring: Split CscopeItem, CscopeQuery and CscopePosition classes and move some functionalities.
 - Split log level.
 
+### Fixed
+- Fix the error because of small output buffer of child process.
+
 ## [0.0.4]
 ### Added
 - Add commands to query the word without modification.

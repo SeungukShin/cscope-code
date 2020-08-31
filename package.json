@@ -281,6 +281,11 @@
 						"default": "E",
 						"enum": ["E", "W", "I"],
 						"enumDescriptions": ["Error", "Warning", "Information"]
+					},
+					"cscopeCode.maxBuffer": {
+						"type": "number",
+						"default": 10,
+						"description": "Max. buffer size for output from cscope in MB."
 					}
 				}
 			}

@@ -19,4 +19,8 @@ export abstract class CscopeExecute {
 			});
 		});
 	}
+
+	static spawn(cmd: string, args: string[]): cp.ChildProcessWithoutNullStreams {
+		return cp.spawn(cmd, args, {cwd: vscode.workspace.rootPath});
+	}
 }

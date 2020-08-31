@@ -28,7 +28,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		// Check Auto Build Configuration
 		if (this.config.get('auto')) {
 			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
-			const database = path.posix.join(root, this.config.get('database') || '');
+			const database = path.posix.join(root, this.config.get('database'));
 			const db = vscode.Uri.file(database);
 
 			try {

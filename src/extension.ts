@@ -199,6 +199,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 		}
 		this.cscopeQuery = new CscopeQuery(option, word);
 		await this.cscopeQuery.query();
+		await this.cscopeQuery.wait();
 		const position = await this.cscopeQuery.quickPick();
 		if (position != undefined) {
 			this.history.push();

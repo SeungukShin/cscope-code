@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as rl from 'readline';
 import { CscopeExecute } from './cscopeExecute';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
@@ -68,15 +69,15 @@ export class CscopeQuery {
 	private results: CscopeItem[];
 	private preview: vscode.TextEditor | undefined;
 	private option: Record<string, string> = {
-		'symbol': ' -0 ',
-		'definition': ' -1 ',
-		'callee': ' -2 ',
-		'caller': ' -3 ',
-		'text': ' -4 ',
-		'egrep': ' -5 ',
-		'file': ' -6 ',
-		'include': ' -7 ',
-		'set': ' -8 '
+		'symbol': '-0',
+		'definition': '-1',
+		'callee': '-2',
+		'caller': '-3',
+		'text': '-4',
+		'egrep': '-5',
+		'file': '-6',
+		'include': '-7',
+		'set': '-8'
 	};
 
 	constructor(type: string, pattern: string) {
@@ -121,67 +122,77 @@ export class CscopeQuery {
 		return path.posix.join(root, file);
 	}
 
-	private async setResults(output: string): Promise<void> {
-		const lines = output.split('\n');
-		for (let line of lines) {
-			// TODO: what if file name contains a space?
-			// line format: (filename) (function) (line number) (content)
-			const tokens = line.match(/([^ ]*) +([^ ]*) +([^ ]*) (.*)/);
-			if (tokens == null || tokens.length < 5) {
-				continue;
+	private async setResult(line: string): Promise<void> {
+		// TODO: what if file name contains a space?
+		// line format: (filename) (function) (line number) (content)
+		const tokens = line.match(/([^ ]*) +([^ ]*) +([^ ]*) (.*)/);
+		if (tokens == null || tokens.length < 5) {
+			return;
+		}
+		const file = this.getFullPath(tokens[1]);
+		const func = tokens[2];
+		const lnum = parseInt(tokens[3]) - 1;
+		const rest = tokens[4];
+		let text = '';
+		let cnum = 0;
+		let length = 0;
+		const uri = vscode.Uri.file(file);
+		try {
+			const f = await vscode.workspace.openTextDocument(uri);
+			text = f.lineAt(lnum).text;
+			if (this.type === 'callee') {
+				cnum = text.search(func);
+				length = func.length;
+			} else {
+				cnum = text.search(this.pattern);
+				length = this.pattern.length;
 			}
-			const file = this.getFullPath(tokens[1]);
-			const func = tokens[2];
-			const lnum = parseInt(tokens[3]) - 1;
-			const rest = tokens[4];
-			let text = '';
-			let cnum = 0;
-			let length = 0;
-			const uri = vscode.Uri.file(file);
-			try {
-				const f = await vscode.workspace.openTextDocument(uri);
-				text = f.lineAt(lnum).text;
-				if (this.type === 'callee') {
-					cnum = text.search(func);
-					length = func.length;
-				} else {
-					cnum = text.search(this.pattern);
-					length = this.pattern.length;
-				}
-				if (cnum == -1) {
-					// If search pattern is not found in that line, still display the result
-					// Because the intended result could be shifted by a few lines due to the
-					// database not being up to date.
-					// TODO: should we search the whole file instead at this point?
-					cnum = 0;
-					length = 0;
-				}
-				const range = new vscode.Range(lnum, cnum, lnum, cnum + length);
-				this.results.push(new CscopeItem(uri, func, range, rest, text));
-			} catch (err) {
-				const msg: string = 'Could not open "' + file + '".';
-				vscode.window.showWarningMessage(msg);
+			if (cnum == -1) {
+				// If search pattern is not found in that line, still display the result
+				// Because the intended result could be shifted by a few lines due to the
+				// database not being up to date.
+				// TODO: should we search the whole file instead at this point?
+				cnum = 0;
+				length = 0;
 			}
+			const range = new vscode.Range(lnum, cnum, lnum, cnum + length);
+			this.results.push(new CscopeItem(uri, func, range, rest, text));
+		} catch (err) {
+			const msg: string = 'Could not open "' + file + '".';
+			vscode.window.showWarningMessage(msg);
 		}
 	}
 
-	async query(): Promise<void> {
-		const cmd: string = this.config.get('cscope') + ' ' + this.config.get('queryArgs') + ' -f ' + this.config.get('database') + this.option[this.type] + this.pattern;
-		this.log.info(cmd);
-		const prog = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
-		let output = '';
-		try {
-			let {stdout, stderr} = await CscopeExecute.exec(cmd);
-			this.log.info(stdout);
-			output = stdout;
-		} catch ({stdout, stderr}) {
-			const msg: string = 'Error occurred while querying: "' + cmd + '".';
-			this.log.err(msg);
-			vscode.window.showInformationMessage(msg);
-			this.log.err(stderr);
-		}
-		await this.setResults(output);
-		prog.dispose();
+	async query(): Promise<CscopeQuery> {
+		return new Promise<CscopeQuery>((resolve, rejects) => {
+			const cmd: string = this.config.get('cscope');
+			const args: string[] = [
+				this.config.get('queryArgs'),
+				'-f',
+				this.config.get('database'),
+				this.option[this.type],
+				this.pattern
+			];
+			const prog = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
+			const proc = CscopeExecute.spawn(cmd, args);
+			const rline = rl.createInterface({input: proc.stdout, terminal: false});
+			rline.on('line', (line) => {
+				this.setResult(line);
+			});
+			proc.stderr.on('data', (data) => {
+				this.log.err(data.toString());
+			});
+			proc.on('error', (err) => {
+				this.log.err(err.message);
+				rejects(this);
+			});
+			proc.on('exit', (code, signal) => {
+				this.log.info('code: ' + code?.toString());
+				this.log.info('signal: ' + signal?.toString());
+				prog.dispose();
+				resolve(this);
+			});
+		});
 	}
 
 	async quickPick(): Promise<CscopePosition | undefined> {

@@ -14,6 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 - Fix the error because of small output buffer of child process.
+- Improve performance. (13s -> 9s for 14622 entries including cscope time)
 
 ## [0.0.4]
 ### Added

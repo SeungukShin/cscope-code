@@ -49,15 +49,6 @@ export class CscopeQuery {
 		return this.results;
 	}
 
-	getLocations(): vscode.Location[] {
-		let locations: vscode.Location[] = [];
-		for (let result of this.results) {
-			const location = new vscode.Location(result.getUri(), result.getRange());
-			locations.push(location);
-		}
-		return locations;
-	}
-
 	private getFullPath(file: string): string {
 		if (path.isAbsolute(file)) {
 			return file;

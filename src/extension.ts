@@ -6,8 +6,9 @@ import { CscopeLog } from './cscopeLog';
 import { CscopeHistory } from './cscopeHistory';
 import { CscopeQuery } from './cscopeQuery';
 import { CscopeCallHierarchyProvider } from './cscopeCallHierarchyProvider';
+import { CscopeDefinitionReferenceProvider } from './cscopeDefinitionReferenceProvider';
 
-export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider {
+export class Cscope {
 	private config: CscopeConfig;
 	private log: CscopeLog;
 	private cscopeQuery: CscopeQuery;
@@ -66,7 +67,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			}
 			if (e.affectsConfiguration('cscopeCode.definitions')) {
 				if (this.config.get('definitions')) {
-					this.definitions = vscode.languages.registerDefinitionProvider('c', this);
+					this.definitions = vscode.languages.registerDefinitionProvider('c', new CscopeDefinitionReferenceProvider());
 				} else {
 					this.definitions?.dispose();
 					this.definitions = undefined;
@@ -74,7 +75,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			}
 			if (e.affectsConfiguration('cscopeCode.references')) {
 				if (this.config.get('references')) {
-					this.references = vscode.languages.registerReferenceProvider('c', this);
+					this.references = vscode.languages.registerReferenceProvider('c', new CscopeDefinitionReferenceProvider());
 				} else {
 					this.references?.dispose();
 					this.references = undefined;
@@ -110,10 +111,10 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CscopeCallHierarchyProvider());
 		}
 		if (this.config.get('definitions')) {
-			this.definitions = vscode.languages.registerDefinitionProvider('c', this);
+			this.definitions = vscode.languages.registerDefinitionProvider('c', new CscopeDefinitionReferenceProvider());
 		}
 		if (this.config.get('references')) {
-			this.references = vscode.languages.registerReferenceProvider('c', this);
+			this.references = vscode.languages.registerReferenceProvider('c', new CscopeDefinitionReferenceProvider());
 		}
 	}
 
@@ -206,18 +207,6 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			this.history.push();
 			position.go();
 		}
-	}
-
-	async provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location[]> {
-		this.cscopeQuery = new CscopeQuery('definition', this.findWord());
-		await this.cscopeQuery.query();
-		return this.cscopeQuery.getLocations();
-	}
-
-	async provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[]> {
-		this.cscopeQuery = new CscopeQuery('symbol', this.findWord());
-		await this.cscopeQuery.query();
-		return this.cscopeQuery.getLocations();
 	}
 }
 

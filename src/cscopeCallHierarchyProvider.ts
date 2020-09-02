@@ -15,7 +15,13 @@ export class CscopeCallHierarchyProvider implements vscode.CallHierarchyProvider
 	private getCallHierarchy<T>(results: CscopeItem[], type: (new (item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) => T)): T[] {
 		let items: T[] = [];
 		for (let result of results) {
-			const item = new type(result, [result.range]);
+			const offset = vscode.workspace.rootPath ? vscode.workspace.rootPath.length + 1 : 0;
+			const uri = result.getUri();
+			const range = result.getRange();
+			const name = result.getFunction();
+			const detail = uri.fsPath.substring(offset) + ':' + range.start.line.toString() + ':' + range.start.character.toString();
+			const callHierarchyItem = new vscode.CallHierarchyItem(vscode.SymbolKind.Function, name, detail, uri, range, range);
+			const item = new type(callHierarchyItem, [range]);
 			items.push(item);
 		}
 		return items;

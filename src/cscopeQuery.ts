@@ -6,9 +6,6 @@ import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopeItem } from './cscopeItem';
 import { CscopePosition } from './cscopePosition';
-import { resolve } from 'dns';
-import { rejects } from 'assert';
-import { syncBuiltinESMExports } from 'module';
 
 export class CscopeQuery {
 	private config: CscopeConfig;
@@ -48,6 +45,10 @@ export class CscopeQuery {
 		return this.pattern;
 	}
 
+	getResults(): CscopeItem[] {
+		return this.results;
+	}
+
 	getLocations(): vscode.Location[] {
 		let locations: vscode.Location[] = [];
 		for (let result of this.results) {
@@ -55,15 +56,6 @@ export class CscopeQuery {
 			locations.push(location);
 		}
 		return locations;
-	}
-
-	getCallHierarchy<T>(type: (new (item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) => T)): T[] {
-		let items: T[] = [];
-		for (let result of this.results) {
-			const item = new type(result, [result.range]);
-			items.push(item);
-		}
-		return items;
 	}
 
 	private getFullPath(file: string): string {

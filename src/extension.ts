@@ -5,8 +5,9 @@ import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopeHistory } from './cscopeHistory';
 import { CscopeQuery } from './cscopeQuery';
+import { CscopeCallHierarchyProvider } from './cscopeCallHierarchyProvider';
 
-export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider, vscode.CallHierarchyProvider {
+export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvider {
 	private config: CscopeConfig;
 	private log: CscopeLog;
 	private cscopeQuery: CscopeQuery;
@@ -57,7 +58,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			}
 			if (e.affectsConfiguration('cscopeCode.callHierarchy')) {
 				if (this.config.get('callHierarchy')) {
-					this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', this);
+					this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CscopeCallHierarchyProvider());
 				} else {
 					this.callHierarchy?.dispose();
 					this.callHierarchy = undefined;
@@ -106,7 +107,7 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 
 		// Register Providers
 		if (this.config.get('callHierarchy')) {
-			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', this);
+			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CscopeCallHierarchyProvider());
 		}
 		if (this.config.get('definitions')) {
 			this.definitions = vscode.languages.registerDefinitionProvider('c', this);
@@ -205,27 +206,6 @@ export class Cscope implements vscode.DefinitionProvider, vscode.ReferenceProvid
 			this.history.push();
 			position.go();
 		}
-	}
-
-	prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CallHierarchyItem | undefined {
-		const range = document.getWordRangeAtPosition(position);
-		if (!range) {
-			return undefined;
-		}
-		const word = document.getText(range);
-		return new vscode.CallHierarchyItem(vscode.SymbolKind.Function, word, '', document.uri, range, range);
-	}
-
-	async provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyOutgoingCall[] | undefined> {
-		this.cscopeQuery = new CscopeQuery('callee', item.name);
-		await this.cscopeQuery.query();
-		return this.cscopeQuery.getCallHierarchy(vscode.CallHierarchyOutgoingCall);
-	}
-
-	async provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyIncomingCall[]> {
-		this.cscopeQuery = new CscopeQuery('caller', item.name);
-		await this.cscopeQuery.query();
-		return this.cscopeQuery.getCallHierarchy(vscode.CallHierarchyIncomingCall);
 	}
 
 	async provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location[]> {

@@ -7,6 +7,7 @@ import { CscopeHistory } from './cscopeHistory';
 import { CscopeQuery } from './cscopeQuery';
 import { CscopeCallHierarchyProvider } from './cscopeCallHierarchyProvider';
 import { CscopeDefinitionReferenceProvider } from './cscopeDefinitionReferenceProvider';
+import { CscopeQuickPick } from './cscopeQuickPick';
 
 export class Cscope {
 	private config: CscopeConfig;
@@ -103,7 +104,7 @@ export class Cscope {
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include.input', () => this.query('include', true)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set', false)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set.input', () => this.query('set', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.cscopeQuery.quickPick()));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick()));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.pop()));
 
 		// Register Providers
@@ -183,11 +184,6 @@ export class Cscope {
 		return document.getText(range);
 	}
 
-	pop(): void {
-		const position = this.history.pop();
-		position?.go();
-	}
-
 	private async query(option: string, input: boolean): Promise<void> {
 		let word: string | undefined = this.findWord();
 		if (input) {
@@ -202,7 +198,22 @@ export class Cscope {
 		this.cscopeQuery = new CscopeQuery(option, word);
 		await this.cscopeQuery.query();
 		await this.cscopeQuery.wait();
-		const position = await this.cscopeQuery.quickPick();
+		const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
+		const position = await quickPick.show();
+		if (position != undefined) {
+			this.history.push();
+			position.go();
+		}
+	}
+
+	pop(): void {
+		const position = this.history.pop();
+		position?.go();
+	}
+
+	async quickPick(): Promise<void> {
+		const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
+		const position = await quickPick.show();
 		if (position != undefined) {
 			this.history.push();
 			position.go();

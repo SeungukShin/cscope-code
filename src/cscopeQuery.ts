@@ -5,7 +5,6 @@ import { CscopeExecute } from './cscopeExecute';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopeItem } from './cscopeItem';
-import { CscopePosition } from './cscopePosition';
 
 export class CscopeQuery {
 	private config: CscopeConfig;
@@ -14,7 +13,6 @@ export class CscopeQuery {
 	private pattern: string;
 	private results: CscopeItem[];
 	private promiseResults: Promise<CscopeItem>[];
-	private preview: vscode.TextEditor | undefined;
 	private progress: vscode.Disposable | undefined;
 	private option: Record<string, string> = {
 		'symbol': '-0',
@@ -142,43 +140,5 @@ export class CscopeQuery {
 			this.progress = undefined;
 		}
 		this.promiseResults = [];
-	}
-
-	async quickPick(): Promise<CscopePosition | undefined> {
-		return new Promise<CscopePosition | undefined>((resolve, reject) => {
-			if (this.pattern == '') {
-				reject(undefined);
-			}
-			const quickPick = vscode.window.createQuickPick<CscopeItem>();
-			quickPick.items = this.results;
-			quickPick.onDidAccept(() => {
-				const item: CscopeItem = quickPick.selectedItems[0];
-				if (item) {
-					const position = new CscopePosition(item.getFile(), item.getRange().start);
-					resolve(position);
-				}
-				quickPick.hide();
-			});
-			quickPick.onDidHide(() => {
-				if (this.preview != undefined) {
-					this.preview.hide();
-					this.preview = undefined;
-				}
-				quickPick.dispose();
-				reject(undefined);
-			});
-			if (this.config.get('preview')) {
-				quickPick.onDidChangeActive(() => {
-					const item: CscopeItem = quickPick.activeItems[0];
-					if (item) {
-						const position = new CscopePosition(item.getFile(), item.getRange().start);
-						position.go(true).then((e: vscode.TextEditor | undefined) => {
-							this.preview = e;
-						});
-					}
-				});
-			}
-			quickPick.show();
-		});
 	}
 }

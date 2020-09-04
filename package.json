@@ -227,6 +227,23 @@
 				}
 			]
 		},
+		"viewsContainers": {
+			"panel": [
+				{
+					"id": "cscopeContainer",
+					"title": "Cscope",
+					"icon": "cscope.png"
+				}
+			]
+		},
+		"views": {
+			"cscopeContainer": [
+				{
+					"id": "cscopeOutput",
+					"name": "Cscope"
+				}
+			]
+		},
 		"configuration": [
 			{
 				"title": "Cscope for Code",
@@ -291,6 +308,11 @@
 						"type": "number",
 						"default": 10,
 						"description": "Max. buffer size for output from cscope in MB."
+					},
+					"cscopeCode.output": {
+						"type": "string",
+						"default": "QuickPick",
+						"enum": ["QuickPick", "TreeView"]
 					}
 				}
 			}

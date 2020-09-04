@@ -6,10 +6,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 ### Added
+- Add TreeView for output message from cscope.
 - Add commands to query the word with modification to command palette.
 - Add menus to the editor context menu.
 - Refactoring: Add CscopeExecute, CscopeConfig, CscopeLog and CscopeHistory classes.
-- Refactoring: Split CscopeItem, CscopeQuery and CscopePosition classes and move some functionalities.
+- Refactoring: Split CscopeItem, CscopeQuery, CscopeQuickPick and CscopePosition classes and move some functionalities.
 - Split log level.
 
 ### Fixed

@@ -8,7 +8,7 @@ import { CscopeQuery } from './cscopeQuery';
 import { CscopeQuickPick } from './cscopeQuickPick';
 import { CscopeCallHierarchyProvider } from './cscopeCallHierarchyProvider';
 import { CscopeDefinitionReferenceProvider } from './cscopeDefinitionReferenceProvider';
-import { performance } from 'perf_hooks';
+import { CscopeTreeDataProvider } from './cscopeTreeDataProvider';
 
 export class Cscope {
 	private config: CscopeConfig;
@@ -19,6 +19,7 @@ export class Cscope {
 	private callHierarchy: vscode.Disposable | undefined;
 	private definitions: vscode.Disposable | undefined;
 	private references: vscode.Disposable | undefined;
+	private treeData: CscopeTreeDataProvider | undefined;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.config = CscopeConfig.getInstance();
@@ -83,6 +84,14 @@ export class Cscope {
 					this.references = undefined;
 				}
 			}
+			if (e.affectsConfiguration('cscopeCode.output')) {
+				if (this.config.get('output') == 'TreeView') {
+					this.treeData = new CscopeTreeDataProvider(this.cscopeQuery.getResults());
+				} else {
+					this.treeData?.dispose();
+					this.treeData = undefined;
+				}
+			}
 		}));
 
 		// Register Commands
@@ -107,6 +116,7 @@ export class Cscope {
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set.input', () => this.query('set', true)));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick()));
 		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.pop()));
+		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.go', (uri, range) => this.go(uri, range)));
 
 		// Register Providers
 		if (this.config.get('callHierarchy')) {
@@ -117,6 +127,11 @@ export class Cscope {
 		}
 		if (this.config.get('references')) {
 			this.references = vscode.languages.registerReferenceProvider('c', new CscopeDefinitionReferenceProvider());
+		}
+
+		// Create View
+		if (this.config.get('output') == 'TreeView') {
+			this.treeData = new CscopeTreeDataProvider(this.cscopeQuery.getResults());
 		}
 	}
 
@@ -129,6 +144,8 @@ export class Cscope {
 		this.definitions = undefined;
 		this.references?.dispose();
 		this.references = undefined;
+		this.treeData?.dispose();
+		this.treeData = undefined;
 	}
 
 	private async build(): Promise<void> {
@@ -197,10 +214,21 @@ export class Cscope {
 			return;
 		}
 		this.cscopeQuery = new CscopeQuery(option, word);
-		let time = performance.now();
 		await this.cscopeQuery.query();
 		await this.cscopeQuery.wait();
-		console.log('time:', performance.now() - time, 'ms');
+		if (this.config.get('output') == 'QuickPick') {
+			const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
+			const position = await quickPick.show();
+			if (position != undefined) {
+				this.history.push();
+				position.go();
+			}
+		} else {
+			this.treeData?.reload(this.cscopeQuery.getResults());
+		}
+	}
+
+	async quickPick(): Promise<void> {
 		const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
 		const position = await quickPick.show();
 		if (position != undefined) {
@@ -214,13 +242,33 @@ export class Cscope {
 		position?.go();
 	}
 
-	async quickPick(): Promise<void> {
-		const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
-		const position = await quickPick.show();
-		if (position != undefined) {
+	async go(uri: vscode.Uri, range: vscode.Range): Promise<void> {
+		return new Promise<void>(async (resolve, reject) => {
 			this.history.push();
-			position.go();
-		}
+			// open a document
+			vscode.workspace.openTextDocument(uri).then((f: vscode.TextDocument) => {
+				let option: vscode.TextDocumentShowOptions = {
+					preserveFocus: false,
+					preview: false,
+					selection: range,
+					viewColumn: vscode.ViewColumn.Active
+				};
+				// open an editor
+				vscode.window.showTextDocument(f, option).then((e: vscode.TextEditor) => {
+					resolve();
+				}), ((error: any) => {
+					const msg: string = 'Cannot show "' + uri + '".';
+					this.log.err(msg);
+					vscode.window.showInformationMessage(msg);
+					reject();
+				});
+			}), ((error: any) => {
+				const msg: string = 'Cannot open "' + uri + '".';
+				this.log.err(msg);
+				vscode.window.showInformationMessage(msg);
+				reject(undefined);
+			});
+		});
 	}
 }
 

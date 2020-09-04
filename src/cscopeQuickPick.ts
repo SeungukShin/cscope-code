@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { CscopeItem } from './cscopeItem';
-import { CscopePosition } from './cscopePosition';
 import { CscopeConfig } from './cscopeConfig';
+import { CscopePosition } from './cscopePosition';
+import { CscopeItem } from './cscopeItem';
 
 class CscopeQuickPickItem implements vscode.QuickPickItem {
 	private position: CscopePosition;

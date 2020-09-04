@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { CscopePosition } from './cscopePosition';
 import { CscopeLog } from './cscopeLog';
+import { CscopePosition } from './cscopePosition';
 
 export class CscopeHistory {
 	private log: CscopeLog;

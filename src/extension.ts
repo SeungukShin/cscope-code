@@ -5,9 +5,10 @@ import { CscopeConfig } from './cscopeConfig';
 import { CscopeLog } from './cscopeLog';
 import { CscopeHistory } from './cscopeHistory';
 import { CscopeQuery } from './cscopeQuery';
+import { CscopeQuickPick } from './cscopeQuickPick';
 import { CscopeCallHierarchyProvider } from './cscopeCallHierarchyProvider';
 import { CscopeDefinitionReferenceProvider } from './cscopeDefinitionReferenceProvider';
-import { CscopeQuickPick } from './cscopeQuickPick';
+import { performance } from 'perf_hooks';
 
 export class Cscope {
 	private config: CscopeConfig;
@@ -196,8 +197,10 @@ export class Cscope {
 			return;
 		}
 		this.cscopeQuery = new CscopeQuery(option, word);
+		let time = performance.now();
 		await this.cscopeQuery.query();
 		await this.cscopeQuery.wait();
+		console.log('time:', performance.now() - time, 'ms');
 		const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
 		const position = await quickPick.show();
 		if (position != undefined) {

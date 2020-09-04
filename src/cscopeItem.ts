@@ -1,13 +1,11 @@
 import * as vscode from 'vscode';
 
-export class CscopeItem implements vscode.QuickPickItem {
+export class CscopeItem {
 	private uri: vscode.Uri;
 	private function: string;
 	private range: vscode.Range;
 	private rest: string;
 	private text: string;
-	// for QuickPickItem
-	label: string;
 
 	constructor(uri: vscode.Uri, func: string, range: vscode.Range, rest: string, text: string) {
 		const offset = vscode.workspace.rootPath ? vscode.workspace.rootPath.length + 1 : 0;
@@ -16,7 +14,6 @@ export class CscopeItem implements vscode.QuickPickItem {
 		this.range = range;
 		this.rest = rest;
 		this.text = text;
-		this.label = func + ' : ' + rest;
 	}
 
 	getUri(): vscode.Uri {

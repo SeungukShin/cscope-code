@@ -4,7 +4,7 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.5]
 ### Added
 - Add TreeView for output message from cscope.
 - Add commands to query the word with modification to command palette.

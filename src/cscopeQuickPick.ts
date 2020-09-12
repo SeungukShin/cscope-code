@@ -58,7 +58,7 @@ export class CscopeQuickPick {
 					this.preview = undefined;
 				}
 				this.quickPick.dispose();
-				reject(undefined);
+				resolve(undefined);
 			});
 			if (this.config.get('preview')) {
 				this.quickPick.onDidChangeActive(() => {

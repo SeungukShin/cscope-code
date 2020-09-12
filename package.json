@@ -3,7 +3,7 @@
 	"displayName": "cscope-code",
 	"description": "Cscope Extension for Code",
 	"icon": "cscope.png",
-	"version": "0.0.5",
+	"version": "0.0.5.1",
 	"publisher": "SeungukShin",
 	"repository": {
 		"type": "git",

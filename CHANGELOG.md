@@ -4,6 +4,10 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [Unreleased]
+### Added
+- Add icons for QuickPick. (method icon for .c, field icon for .h and file icon for others)
+
 ## [0.0.6]
 ### Fixed
 - Fix error when QuickPick is canceled.

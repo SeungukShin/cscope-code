@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { CscopeConfig } from './cscopeConfig';
 import { CscopePosition } from './cscopePosition';
 import { CscopeItem } from './cscopeItem';
@@ -33,7 +34,9 @@ export class CscopeQuickPick {
 			const uri = result.getUri();
 			const range = result.getRange();
 			const position = new CscopePosition(uri.fsPath, range.start);
-			const label = result.getFunction() + ' : ' + result.getLine();
+			const ext = path.extname(result.getFile());
+			const icon = (ext === '.c') ? '$(symbol-method)' : (ext === '.h') ? '$(symbol-field)' : '$(symbol-file)';
+			const label = icon + ' ' + result.getFunction() + ' : ' + result.getLine();
 			const detail = uri.fsPath.substring(offset) + ':' + range.start.line.toString() + ':' + range.start.character.toString();
 			const cscopeQuickPickItem = new CscopeQuickPickItem(position, label, detail);
 			this.items.push(cscopeQuickPickItem);

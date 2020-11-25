@@ -8,6 +8,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 - Add icons for QuickPick. (method icon for .c, field icon for .h and file icon for others)
 
+### Changed
+- Refactoring: Remove prefix 'cscope' on classes and files.
+- Refactoring: Change configuration name.
+
 ## [0.0.6]
 ### Fixed
 - Fix error when QuickPick is canceled.

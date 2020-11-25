@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { CscopeItem } from './cscopeItem';
-import { CscopeQuery } from './cscopeQuery';
+import { QueryItem } from './queryItem';
+import { Query } from './query';
 
-export class CscopeDefinitionReferenceProvider implements vscode.DefinitionProvider, vscode.ReferenceProvider {
-	getLocations(results: CscopeItem[]): vscode.Location[] {
+export class DefinitionReferenceProvider implements vscode.DefinitionProvider, vscode.ReferenceProvider {
+	getLocations(results: QueryItem[]): vscode.Location[] {
 		let locations: vscode.Location[] = [];
 		for (let result of results) {
 			const location = new vscode.Location(result.getUri(), result.getRange());
@@ -18,7 +18,7 @@ export class CscopeDefinitionReferenceProvider implements vscode.DefinitionProvi
 			return undefined;
 		}
 		const word = document.getText(range);
-        const cscopeQuery = new CscopeQuery('definition', word);
+        const cscopeQuery = new Query('definition', word);
 		await cscopeQuery.query();
 		await cscopeQuery.wait();
 		return this.getLocations(cscopeQuery.getResults());
@@ -30,7 +30,7 @@ export class CscopeDefinitionReferenceProvider implements vscode.DefinitionProvi
 			return undefined;
 		}
 		const word = document.getText(range);
-		const cscopeQuery = new CscopeQuery('symbol', word);
+		const cscopeQuery = new Query('symbol', word);
 		await cscopeQuery.query();
 		await cscopeQuery.wait();
 		return this.getLocations(cscopeQuery.getResults());

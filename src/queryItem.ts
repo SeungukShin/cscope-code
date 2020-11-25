@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export class CscopeItem {
+export class QueryItem {
 	private uri: vscode.Uri;
 	private function: string;
 	private range: vscode.Range;

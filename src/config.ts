@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
 import { assert } from 'console';
 
-export class CscopeConfig {
-	private static instance: CscopeConfig;
+export class Config {
+	private static instance: Config;
 	private config: vscode.WorkspaceConfiguration;
 
 	private constructor() {
 		this.config = vscode.workspace.getConfiguration('cscopeCode');
 	}
 
-	static getInstance(): CscopeConfig {
-		if (!CscopeConfig.instance) {
-			CscopeConfig.instance = new CscopeConfig();
+	static getInstance(): Config {
+		if (!Config.instance) {
+			Config.instance = new Config();
 		}
-		return CscopeConfig.instance;
+		return Config.instance;
 	}
 
 	reload(): void {

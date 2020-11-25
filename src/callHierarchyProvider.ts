@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { CscopeItem } from './cscopeItem';
-import { CscopeQuery } from './cscopeQuery';
+import { QueryItem } from './queryItem';
+import { Query } from './query';
 
-export class CscopeCallHierarchyProvider implements vscode.CallHierarchyProvider {
+export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 	prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CallHierarchyItem | undefined {
 		const range = document.getWordRangeAtPosition(position);
 		if (!range) {
@@ -12,7 +12,7 @@ export class CscopeCallHierarchyProvider implements vscode.CallHierarchyProvider
 		return new vscode.CallHierarchyItem(vscode.SymbolKind.Function, word, '', document.uri, range, range);
 	}
 
-	private getCallHierarchy<T>(results: CscopeItem[], type: (new (item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) => T)): T[] {
+	private getCallHierarchy<T>(results: QueryItem[], type: (new (item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) => T)): T[] {
 		let items: T[] = [];
 		for (let result of results) {
 			const offset = vscode.workspace.rootPath ? vscode.workspace.rootPath.length + 1 : 0;
@@ -28,14 +28,14 @@ export class CscopeCallHierarchyProvider implements vscode.CallHierarchyProvider
 	}
 
 	async provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyOutgoingCall[] | undefined> {
-		const cscopeQuery = new CscopeQuery('callee', item.name);
+		const cscopeQuery = new Query('callee', item.name);
 		await cscopeQuery.query();
 		await cscopeQuery.wait();
 		return this.getCallHierarchy(cscopeQuery.getResults(), vscode.CallHierarchyOutgoingCall);
 	}
 
 	async provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyIncomingCall[]> {
-		const cscopeQuery = new CscopeQuery('caller', item.name);
+		const cscopeQuery = new Query('caller', item.name);
 		await cscopeQuery.query();
 		await cscopeQuery.wait();
 		return this.getCallHierarchy(cscopeQuery.getResults(), vscode.CallHierarchyIncomingCall);

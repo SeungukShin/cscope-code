@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
-import { CscopeConfig } from './cscopeConfig';
-import { CscopePosition } from './cscopePosition';
-import { CscopeItem } from './cscopeItem';
+import { Config } from './config';
+import { Position } from './position';
+import { QueryItem } from './queryItem';
 
-class CscopeTreeItem {
+class TreeItem {
 	private name: string;
 	private uri: vscode.Uri | undefined;
 	private range: vscode.Range | undefined;
-	private parent: CscopeTreeItem | undefined;
-	private children: CscopeTreeItem[];
+	private parent: TreeItem | undefined;
+	private children: TreeItem[];
 
-	constructor(name: string, uri: vscode.Uri | undefined = undefined, range: vscode.Range | undefined = undefined, parent: CscopeTreeItem | undefined = undefined) {
+	constructor(name: string, uri: vscode.Uri | undefined = undefined, range: vscode.Range | undefined = undefined, parent: TreeItem | undefined = undefined) {
 		this.name = name;
 		this.uri = uri;
 		this.range = range;
@@ -30,32 +30,32 @@ class CscopeTreeItem {
 		return this.range;
 	}
 
-	getParent(): CscopeTreeItem | undefined {
+	getParent(): TreeItem | undefined {
 		return this.parent;
 	}
 
-	getChildren(): CscopeTreeItem[] {
+	getChildren(): TreeItem[] {
 		return this.children;
 	}
 
-	pushChild(child: CscopeTreeItem): void {
+	pushChild(child: TreeItem): void {
 		this.children.push(child);
 	}
 }
 
-export class CscopeTreeDataProvider implements vscode.TreeDataProvider<CscopeTreeItem> {
-	private treeView: vscode.TreeView<CscopeTreeItem>;
-	private items: Map<string, CscopeTreeItem>;
-	private _onDidChangeTreeData = new vscode.EventEmitter<CscopeTreeItem | undefined | null>();
+export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
+	private treeView: vscode.TreeView<TreeItem>;
+	private items: Map<string, TreeItem>;
+	private _onDidChangeTreeData = new vscode.EventEmitter<TreeItem | undefined | null>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-	constructor(cscopeItems: CscopeItem[]) {
+	constructor(cscopeItems: QueryItem[]) {
 		this.treeView = vscode.window.createTreeView('cscopeOutput', {treeDataProvider: this});
-		this.items = new Map<string, CscopeTreeItem>();
+		this.items = new Map<string, TreeItem>();
 		this.setItems(cscopeItems);
 	}
 
-	private setItems(cscopeItems: CscopeItem[]): void {
+	private setItems(cscopeItems: QueryItem[]): void {
 		const offset = vscode.workspace.rootPath ? vscode.workspace.rootPath.length + 1 : 0;
 		for (let item of cscopeItems) {
 			const uri = item.getUri();
@@ -68,26 +68,26 @@ export class CscopeTreeDataProvider implements vscode.TreeDataProvider<CscopeTre
 			const treeItemName = func + '[' + line + ':' + column + ']' + ' ' + text.trim();
 			let root = this.items.get(file);
 			if (root == undefined) {
-				root = new CscopeTreeItem(file, uri);
+				root = new TreeItem(file, uri);
 				this.items.set(file, root);
 			}
-			const treeItem = new CscopeTreeItem(treeItemName, uri, range, root);
+			const treeItem = new TreeItem(treeItemName, uri, range, root);
 			root.pushChild(treeItem);
 		}
 	}
 
-	getChildren(element?: CscopeTreeItem): CscopeTreeItem[] {
+	getChildren(element?: TreeItem): TreeItem[] {
 		if (element == undefined) {
 			return Array.from(this.items.values());
 		}
 		return element.getChildren();
 	}
 
-	getParent(element: CscopeTreeItem): CscopeTreeItem | undefined {
+	getParent(element: TreeItem): TreeItem | undefined {
 		return element.getParent();
 	}
 
-	getTreeItem(element: CscopeTreeItem): vscode.TreeItem {
+	getTreeItem(element: TreeItem): vscode.TreeItem {
 		const collapsibleState = element.getChildren().length > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;
 		const treeItem = new vscode.TreeItem(element.getUri()!, collapsibleState);
 		treeItem.label = element.getName();
@@ -97,7 +97,7 @@ export class CscopeTreeDataProvider implements vscode.TreeDataProvider<CscopeTre
 		return treeItem;
 	}
 
-	reload(cscopeItems: CscopeItem[]): void {
+	reload(cscopeItems: QueryItem[]): void {
 		this.setItems(cscopeItems);
 		this._onDidChangeTreeData.fire();
 		const firstItem = Array.from(this.items.values())[0];

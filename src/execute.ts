@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import { CscopeConfig } from './cscopeConfig';
+import { Config } from './config';
 
-export abstract class CscopeExecute {
+export abstract class Execute {
 	static async exec(command: string): Promise<{stdout: string; stderr: string}> {
-		const config = CscopeConfig.getInstance();
+		const config = Config.getInstance();
 		let max: number | undefined = config.get('maxBuffer');
 		if (max != undefined) {
 			max = max * 1024 * 1024;

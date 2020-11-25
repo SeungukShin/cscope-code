@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import { CscopeLog } from './cscopeLog';
+import { Log } from './log';
 
-export class CscopePosition {
-	private log: CscopeLog;
+export class Position {
+	private log: Log;
 	private file: string;
 	private position: vscode.Position;
 
 	constructor(file: string | undefined = undefined, position: vscode.Position | undefined = undefined) {
-		this.log = CscopeLog.getInstance();
+		this.log = Log.getInstance();
 		const editor = vscode.window.activeTextEditor;
 		if (file == undefined) {
 			if (editor == undefined) {

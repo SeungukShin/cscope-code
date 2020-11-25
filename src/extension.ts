@@ -1,31 +1,31 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CscopeExecute } from './cscopeExecute';
-import { CscopeConfig } from './cscopeConfig';
-import { CscopeLog } from './cscopeLog';
-import { CscopeHistory } from './cscopeHistory';
-import { CscopeQuery } from './cscopeQuery';
-import { CscopeQuickPick } from './cscopeQuickPick';
-import { CscopeCallHierarchyProvider } from './cscopeCallHierarchyProvider';
-import { CscopeDefinitionReferenceProvider } from './cscopeDefinitionReferenceProvider';
-import { CscopeTreeDataProvider } from './cscopeTreeDataProvider';
+import { Execute } from './execute';
+import { Config } from './config';
+import { Log } from './log';
+import { History } from './history';
+import { Query } from './query';
+import { QuickPick } from './quickPick';
+import { CallHierarchyProvider } from './callHierarchyProvider';
+import { DefinitionReferenceProvider } from './definitionReferenceProvider';
+import { TreeDataProvider } from './treeDataProvider';
 
 export class Cscope {
-	private config: CscopeConfig;
-	private log: CscopeLog;
-	private cscopeQuery: CscopeQuery;
-	private history: CscopeHistory;
+	private config: Config;
+	private log: Log;
+	private cscopeQuery: Query;
+	private history: History;
 	private fswatcher: vscode.FileSystemWatcher | undefined;
 	private callHierarchy: vscode.Disposable | undefined;
 	private definitions: vscode.Disposable | undefined;
 	private references: vscode.Disposable | undefined;
-	private treeData: CscopeTreeDataProvider | undefined;
+	private treeData: TreeDataProvider | undefined;
 
 	constructor(context: vscode.ExtensionContext) {
-		this.config = CscopeConfig.getInstance();
-		this.log = CscopeLog.getInstance();
-		this.cscopeQuery = new CscopeQuery('', '');
-		this.history = new CscopeHistory();
+		this.config = Config.getInstance();
+		this.log = Log.getInstance();
+		this.cscopeQuery = new Query('', '');
+		this.history = new History();
 		this.callHierarchy = undefined;
 		this.definitions = undefined;
 		this.references = undefined;
@@ -62,7 +62,7 @@ export class Cscope {
 			}
 			if (e.affectsConfiguration('cscopeCode.callHierarchy')) {
 				if (this.config.get('callHierarchy')) {
-					this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CscopeCallHierarchyProvider());
+					this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CallHierarchyProvider());
 				} else {
 					this.callHierarchy?.dispose();
 					this.callHierarchy = undefined;
@@ -70,7 +70,7 @@ export class Cscope {
 			}
 			if (e.affectsConfiguration('cscopeCode.definitions')) {
 				if (this.config.get('definitions')) {
-					this.definitions = vscode.languages.registerDefinitionProvider('c', new CscopeDefinitionReferenceProvider());
+					this.definitions = vscode.languages.registerDefinitionProvider('c', new DefinitionReferenceProvider());
 				} else {
 					this.definitions?.dispose();
 					this.definitions = undefined;
@@ -78,7 +78,7 @@ export class Cscope {
 			}
 			if (e.affectsConfiguration('cscopeCode.references')) {
 				if (this.config.get('references')) {
-					this.references = vscode.languages.registerReferenceProvider('c', new CscopeDefinitionReferenceProvider());
+					this.references = vscode.languages.registerReferenceProvider('c', new DefinitionReferenceProvider());
 				} else {
 					this.references?.dispose();
 					this.references = undefined;
@@ -86,7 +86,7 @@ export class Cscope {
 			}
 			if (e.affectsConfiguration('cscopeCode.output')) {
 				if (this.config.get('output') == 'TreeView') {
-					this.treeData = new CscopeTreeDataProvider(this.cscopeQuery.getResults());
+					this.treeData = new TreeDataProvider(this.cscopeQuery.getResults());
 				} else {
 					this.treeData?.dispose();
 					this.treeData = undefined;
@@ -120,18 +120,18 @@ export class Cscope {
 
 		// Register Providers
 		if (this.config.get('callHierarchy')) {
-			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CscopeCallHierarchyProvider());
+			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CallHierarchyProvider());
 		}
 		if (this.config.get('definitions')) {
-			this.definitions = vscode.languages.registerDefinitionProvider('c', new CscopeDefinitionReferenceProvider());
+			this.definitions = vscode.languages.registerDefinitionProvider('c', new DefinitionReferenceProvider());
 		}
 		if (this.config.get('references')) {
-			this.references = vscode.languages.registerReferenceProvider('c', new CscopeDefinitionReferenceProvider());
+			this.references = vscode.languages.registerReferenceProvider('c', new DefinitionReferenceProvider());
 		}
 
 		// Create View
 		if (this.config.get('output') == 'TreeView') {
-			this.treeData = new CscopeTreeDataProvider(this.cscopeQuery.getResults());
+			this.treeData = new TreeDataProvider(this.cscopeQuery.getResults());
 		}
 	}
 
@@ -153,7 +153,7 @@ export class Cscope {
 		this.log.info(cmd);
 		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
 		try {
-			let {stdout, stderr} = await CscopeExecute.exec(cmd);
+			let {stdout, stderr} = await Execute.exec(cmd);
 			const msg: string = '"' + this.config.get('database') + '" is updated.'
 			this.log.info(msg);
 			vscode.window.setStatusBarMessage(msg, 5000);
@@ -213,11 +213,11 @@ export class Cscope {
 			vscode.window.showInformationMessage(msg);
 			return;
 		}
-		this.cscopeQuery = new CscopeQuery(option, word);
+		this.cscopeQuery = new Query(option, word);
 		await this.cscopeQuery.query();
 		await this.cscopeQuery.wait();
 		if (this.config.get('output') == 'QuickPick') {
-			const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
+			const quickPick = new QuickPick(this.cscopeQuery.getResults());
 			const position = await quickPick.show();
 			if (position != undefined) {
 				this.history.push();
@@ -229,7 +229,7 @@ export class Cscope {
 	}
 
 	async quickPick(): Promise<void> {
-		const quickPick = new CscopeQuickPick(this.cscopeQuery.getResults());
+		const quickPick = new QuickPick(this.cscopeQuery.getResults());
 		const position = await quickPick.show();
 		if (position != undefined) {
 			this.history.push();

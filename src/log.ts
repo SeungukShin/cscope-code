@@ -1,21 +1,21 @@
 import * as vscode from 'vscode';
-import { CscopeConfig } from './cscopeConfig';
+import { Config } from './config';
 
-export class CscopeLog {
-	private static instance: CscopeLog;
-	private config: CscopeConfig; 
+export class Log {
+	private static instance: Log;
+	private config: Config; 
 	private log: vscode.OutputChannel;
 
 	private constructor() {
-		this.config = CscopeConfig.getInstance();
+		this.config = Config.getInstance();
 		this.log = vscode.window.createOutputChannel('Cscope');
 	}
 
-	static getInstance(): CscopeLog {
-		if (!CscopeLog.instance) {
-			CscopeLog.instance = new CscopeLog();
+	static getInstance(): Log {
+		if (!Log.instance) {
+			Log.instance = new Log();
 		}
-		return CscopeLog.instance;
+		return Log.instance;
 	}
 
 	err(msg: string): void {

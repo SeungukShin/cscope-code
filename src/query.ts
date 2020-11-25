@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as rl from 'readline';
-import { CscopeExecute } from './cscopeExecute';
-import { CscopeConfig } from './cscopeConfig';
-import { CscopeLog } from './cscopeLog';
-import { CscopeItem } from './cscopeItem';
+import { Execute } from './execute';
+import { Config } from './config';
+import { Log } from './log';
+import { QueryItem } from './queryItem';
 
-export class CscopeQuery {
-	private config: CscopeConfig;
-	private log: CscopeLog;
+export class Query {
+	private config: Config;
+	private log: Log;
 	private type: string;
 	private pattern: string;
-	private results: CscopeItem[];
-	private promiseResults: Promise<CscopeItem>[];
+	private results: QueryItem[];
+	private promiseResults: Promise<QueryItem>[];
 	private progress: vscode.Disposable | undefined;
 	private option: Record<string, string> = {
 		'symbol': '-0',
@@ -27,8 +27,8 @@ export class CscopeQuery {
 	};
 
 	constructor(type: string, pattern: string) {
-		this.config = CscopeConfig.getInstance();
-		this.log = CscopeLog.getInstance();
+		this.config = Config.getInstance();
+		this.log = Log.getInstance();
 		this.type = type;
 		this.pattern = pattern;
 		this.results = [];
@@ -43,7 +43,7 @@ export class CscopeQuery {
 		return this.pattern;
 	}
 
-	getResults(): CscopeItem[] {
+	getResults(): QueryItem[] {
 		return this.results;
 	}
 
@@ -55,8 +55,8 @@ export class CscopeQuery {
 		return path.posix.join(root, file);
 	}
 
-	private async setResult(line: string): Promise<CscopeItem> {
-		return new Promise<CscopeItem>((resolve, rejects) => {
+	private async setResult(line: string): Promise<QueryItem> {
+		return new Promise<QueryItem>((resolve, rejects) => {
 			// TODO: what if file name contains a space?
 			// line format: (filename) (function) (line number) (content)
 			const tokens = line.match(/([^ ]*) +([^ ]*) +([^ ]*) (.*)/);
@@ -90,7 +90,7 @@ export class CscopeQuery {
 					length = 0;
 				}
 				const range = new vscode.Range(lnum, cnum, lnum, cnum + length);
-				const item = new CscopeItem(uri, func, range, rest, text);
+				const item = new QueryItem(uri, func, range, rest, text);
 				this.results.push(item);
 				resolve(item);
 			}, (e) => {
@@ -101,8 +101,8 @@ export class CscopeQuery {
 		});
 	}
 
-	async query(): Promise<CscopeQuery> {
-		return new Promise<CscopeQuery>((resolve, rejects) => {
+	async query(): Promise<Query> {
+		return new Promise<Query>((resolve, rejects) => {
 			const cmd: string = this.config.get('cscope');
 			const args: string[] = [
 				this.config.get('queryArgs'),
@@ -115,7 +115,7 @@ export class CscopeQuery {
 				this.progress.dispose();
 			}
 			this.progress = vscode.window.setStatusBarMessage('Querying "' + this.pattern + '"...');
-			const proc = CscopeExecute.spawn(cmd, args);
+			const proc = Execute.spawn(cmd, args);
 			const rline = rl.createInterface({input: proc.stdout, terminal: false});
 			rline.on('line', (line) => {
 				this.promiseResults.push(this.setResult(line));

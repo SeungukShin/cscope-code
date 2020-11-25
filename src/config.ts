@@ -6,7 +6,7 @@ export class Config {
 	private config: vscode.WorkspaceConfiguration;
 
 	private constructor() {
-		this.config = vscode.workspace.getConfiguration('cscopeCode');
+		this.config = vscode.workspace.getConfiguration('cscope-code');
 	}
 
 	static getInstance(): Config {
@@ -17,7 +17,7 @@ export class Config {
 	}
 
 	reload(): void {
-		this.config = vscode.workspace.getConfiguration('cscopeCode');
+		this.config = vscode.workspace.getConfiguration('cscope-code');
 	}
 
 	get<T>(section: string): T {

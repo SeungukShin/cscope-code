@@ -248,68 +248,68 @@
 			{
 				"title": "Cscope for Code",
 				"properties": {
-					"cscopeCode.cscope": {
+					"cscope-code.cscope": {
 						"type": "string",
 						"default": "cscope",
 						"description": "Command for cscope."
 					},
-					"cscopeCode.buildArgs": {
+					"cscope-code.buildArgs": {
 						"type": "string",
 						"default": "-RbU",
 						"description": "Arguments to build a cscope database."
 					},
-					"cscopeCode.queryArgs": {
+					"cscope-code.queryArgs": {
 						"type": "string",
 						"default": "-RdL",
 						"description": "Arguments to query a symbol."
 					},
-					"cscopeCode.database": {
+					"cscope-code.database": {
 						"type": "string",
 						"default": "cscope.out",
 						"description": "A database filename for cscope."
 					},
-					"cscopeCode.auto": {
+					"cscope-code.auto": {
 						"type": "boolean",
 						"default": true,
 						"description": "Generate a cscope database when open an workspace or store a file on it."
 					},
-					"cscopeCode.extensions": {
+					"cscope-code.extensions": {
 						"type": "string",
 						"default": "c,cpp,cc,cxx,c++,hpp,hh,hxx,h",
 						"description": "Extensions to monitor their changes to update database."
 					},
-					"cscopeCode.preview": {
+					"cscope-code.preview": {
 						"type": "boolean",
 						"default": true,
 						"description": "Preview the result of the query."
 					},
-					"cscopeCode.callHierarchy": {
+					"cscope-code.callHierarchy": {
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Show Call Hierarchy'."
 					},
-					"cscopeCode.definitions": {
+					"cscope-code.definitions": {
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Peek Definition'."
 					},
-					"cscopeCode.references": {
+					"cscope-code.references": {
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Peek References'."
 					},
-					"cscopeCode.logLevel": {
+					"cscope-code.logLevel": {
 						"type": "string",
 						"default": "E",
 						"enum": ["E", "W", "I"],
 						"enumDescriptions": ["Error", "Warning", "Information"]
 					},
-					"cscopeCode.maxBuffer": {
+					"cscope-code.maxBuffer": {
 						"type": "number",
 						"default": 10,
 						"description": "Max. buffer size for output from cscope in MB."
 					},
-					"cscopeCode.output": {
+					"cscope-code.output": {
 						"type": "string",
 						"default": "QuickPick",
 						"enum": ["QuickPick", "TreeView"]

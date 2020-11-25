@@ -5,7 +5,7 @@
 
 Integrates [cscope](http://cscope.sourceforge.net) into VS Code.
 
-![demo](https://raw.githubusercontent.com/bshin/cscope-code/master/demo.gif)
+![demo](https://raw.githubusercontent.com/SeungukShin/cscope-code/master/demo.gif)
 
 ## Commands
 

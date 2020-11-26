@@ -95,28 +95,28 @@ export class Cscope {
 		}));
 
 		// Register Commands
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.build', () => this.build()));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.symbol', () => this.query('symbol', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.symbol.input', () => this.query('symbol', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.definition', () => this.query('definition', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.definition.input', () => this.query('definition', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.callee', () => this.query('callee', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.callee.input', () => this.query('callee', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.caller', () => this.query('caller', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.caller.input', () => this.query('caller', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.text', () => this.query('text', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.text.input', () => this.query('text', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.egrep', () => this.query('egrep', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.egrep.input', () => this.query('egrep', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.file', () => this.query('file', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.file.input', () => this.query('file', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include', () => this.query('include', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.include.input', () => this.query('include', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set', () => this.query('set', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.set.input', () => this.query('set', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.result', () => this.quickPick()));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.pop', () => this.pop()));
-		context.subscriptions.push(vscode.commands.registerCommand('extension.cscope-code.go', (uri, range) => this.go(uri, range)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.build', () => this.build()));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.symbol', () => this.query('symbol', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.symbol.input', () => this.query('symbol', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.definition', () => this.query('definition', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.definition.input', () => this.query('definition', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.callee', () => this.query('callee', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.callee.input', () => this.query('callee', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.caller', () => this.query('caller', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.caller.input', () => this.query('caller', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.text', () => this.query('text', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.text.input', () => this.query('text', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.egrep', () => this.query('egrep', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.egrep.input', () => this.query('egrep', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.file', () => this.query('file', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.file.input', () => this.query('file', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.include', () => this.query('include', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.include.input', () => this.query('include', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.set', () => this.query('set', false)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.set.input', () => this.query('set', true)));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.result', () => this.quickPick()));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.pop', () => this.pop()));
+		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.go', (uri, range) => this.go(uri, range)));
 
 		// Register Providers
 		if (this.config.get('callHierarchy')) {

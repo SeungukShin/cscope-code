@@ -23,173 +23,173 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.cscope-code.build",
+				"command": "cscope-code.build",
 				"title": "Cscope Code: Build"
 			},
 			{
-				"command": "extension.cscope-code.symbol",
+				"command": "cscope-code.symbol",
 				"title": "Cscope Code: Symbol"
 			},
 			{
-				"command": "extension.cscope-code.symbol.input",
+				"command": "cscope-code.symbol.input",
 				"title": "Cscope Code: Symbol Input"
 			},
 			{
-				"command": "extension.cscope-code.definition",
+				"command": "cscope-code.definition",
 				"title": "Cscope Code: Definition"
 			},
 			{
-				"command": "extension.cscope-code.definition.input",
+				"command": "cscope-code.definition.input",
 				"title": "Cscope Code: Definition Input"
 			},
 			{
-				"command": "extension.cscope-code.callee",
+				"command": "cscope-code.callee",
 				"title": "Cscope Code: Callee"
 			},
 			{
-				"command": "extension.cscope-code.callee.input",
+				"command": "cscope-code.callee.input",
 				"title": "Cscope Code: Callee Input"
 			},
 			{
-				"command": "extension.cscope-code.caller",
+				"command": "cscope-code.caller",
 				"title": "Cscope Code: Caller"
 			},
 			{
-				"command": "extension.cscope-code.caller.input",
+				"command": "cscope-code.caller.input",
 				"title": "Cscope Code: Caller Input"
 			},
 			{
-				"command": "extension.cscope-code.text",
+				"command": "cscope-code.text",
 				"title": "Cscope Code: Text"
 			},
 			{
-				"command": "extension.cscope-code.text.input",
+				"command": "cscope-code.text.input",
 				"title": "Cscope Code: Text Input"
 			},
 			{
-				"command": "extension.cscope-code.egrep",
+				"command": "cscope-code.egrep",
 				"title": "Cscope Code: Pattern"
 			},
 			{
-				"command": "extension.cscope-code.egrep.input",
+				"command": "cscope-code.egrep.input",
 				"title": "Cscope Code: Pattern Input"
 			},
 			{
-				"command": "extension.cscope-code.file",
+				"command": "cscope-code.file",
 				"title": "Cscope Code: File"
 			},
 			{
-				"command": "extension.cscope-code.file.input",
+				"command": "cscope-code.file.input",
 				"title": "Cscope Code: File Input"
 			},
 			{
-				"command": "extension.cscope-code.include",
+				"command": "cscope-code.include",
 				"title": "Cscope Code: Include"
 			},
 			{
-				"command": "extension.cscope-code.include.input",
+				"command": "cscope-code.include.input",
 				"title": "Cscope Code: Include Input"
 			},
 			{
-				"command": "extension.cscope-code.set",
+				"command": "cscope-code.set",
 				"title": "Cscope Code: Set"
 			},
 			{
-				"command": "extension.cscope-code.set.input",
+				"command": "cscope-code.set.input",
 				"title": "Cscope Code: Set Input"
 			},
 			{
-				"command": "extension.cscope-code.result",
+				"command": "cscope-code.result",
 				"title": "Cscope Code: Result"
 			},
 			{
-				"command": "extension.cscope-code.pop",
+				"command": "cscope-code.pop",
 				"title": "Cscope Code: Pop"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "extension.cscope-code.build",
+				"command": "cscope-code.build",
 				"key": "ctrl+. b"
 			},
 			{
-				"command": "extension.cscope-code.symbol",
+				"command": "cscope-code.symbol",
 				"key": "ctrl+. s"
 			},
 			{
-				"command": "extension.cscope-code.symbol.input",
+				"command": "cscope-code.symbol.input",
 				"key": "ctrl+. shift+s"
 			},
 			{
-				"command": "extension.cscope-code.definition",
+				"command": "cscope-code.definition",
 				"key": "ctrl+. g"
 			},
 			{
-				"command": "extension.cscope-code.definition.input",
+				"command": "cscope-code.definition.input",
 				"key": "ctrl+. shift+g"
 			},
 			{
-				"command": "extension.cscope-code.callee",
+				"command": "cscope-code.callee",
 				"key": "ctrl+. a"
 			},
 			{
-				"command": "extension.cscope-code.callee.input",
+				"command": "cscope-code.callee.input",
 				"key": "ctrl+. shift+a"
 			},
 			{
-				"command": "extension.cscope-code.caller",
+				"command": "cscope-code.caller",
 				"key": "ctrl+. c"
 			},
 			{
-				"command": "extension.cscope-code.caller.input",
+				"command": "cscope-code.caller.input",
 				"key": "ctrl+. shift+c"
 			},
 			{
-				"command": "extension.cscope-code.text",
+				"command": "cscope-code.text",
 				"key": "ctrl+. t"
 			},
 			{
-				"command": "extension.cscope-code.text.input",
+				"command": "cscope-code.text.input",
 				"key": "ctrl+. shift+t"
 			},
 			{
-				"command": "extension.cscope-code.egrep",
+				"command": "cscope-code.egrep",
 				"key": "ctrl+. e"
 			},
 			{
-				"command": "extension.cscope-code.egrep.input",
+				"command": "cscope-code.egrep.input",
 				"key": "ctrl+. shift+e"
 			},
 			{
-				"command": "extension.cscope-code.file",
+				"command": "cscope-code.file",
 				"key": "ctrl+. f"
 			},
 			{
-				"command": "extension.cscope-code.file.input",
+				"command": "cscope-code.file.input",
 				"key": "ctrl+. shift+f"
 			},
 			{
-				"command": "extension.cscope-code.include",
+				"command": "cscope-code.include",
 				"key": "ctrl+. i"
 			},
 			{
-				"command": "extension.cscope-code.include.input",
+				"command": "cscope-code.include.input",
 				"key": "ctrl+. shift+i"
 			},
 			{
-				"command": "extension.cscope-code.set",
+				"command": "cscope-code.set",
 				"key": "ctrl+. n"
 			},
 			{
-				"command": "extension.cscope-code.set.input",
+				"command": "cscope-code.set.input",
 				"key": "ctrl+. shift+n"
 			},
 			{
-				"command": "extension.cscope-code.result",
+				"command": "cscope-code.result",
 				"key": "ctrl+. ."
 			},
 			{
-				"command": "extension.cscope-code.pop",
+				"command": "cscope-code.pop",
 				"key": "ctrl+. o"
 			}
 		],
@@ -197,32 +197,32 @@
 			"editor/context": [
 				{
 					"when": "resourceLangId == c || resourceLangId == cpp",
-					"command": "extension.cscope-code.definition",
+					"command": "cscope-code.definition",
 					"group": "1_Cscope@1"
 				},
 				{
 					"when": "resourceLangId == c || resourceLangId == cpp",
-					"command": "extension.cscope-code.symbol",
+					"command": "cscope-code.symbol",
 					"group": "1_Cscope@2"
 				},
 				{
 					"when": "resourceLangId == c || resourceLangId == cpp",
-					"command": "extension.cscope-code.callee",
+					"command": "cscope-code.callee",
 					"group": "1_Cscope@3"
 				},
 				{
 					"when": "resourceLangId == c || resourceLangId == cpp",
-					"command": "extension.cscope-code.caller",
+					"command": "cscope-code.caller",
 					"group": "1_Cscope@4"
 				},
 				{
 					"when": "resourceLangId == c || resourceLangId == cpp",
-					"command": "extension.cscope-code.text",
+					"command": "cscope-code.text",
 					"group": "1_Cscope@5"
 				},
 				{
 					"when": "resourceLangId == c || resourceLangId == cpp",
-					"command": "extension.cscope-code.pop",
+					"command": "cscope-code.pop",
 					"group": "1_Cscope@6"
 				}
 			]

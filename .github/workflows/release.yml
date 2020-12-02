@@ -19,7 +19,7 @@ jobs:
       - name: Install vsce
         run: |
           npm install vsce
-          echo "::add-path::$(npm bin)"
+          echo "$(npm bin)" >> $GITHUB_PATH
 
       - name: Build vscode extension
         run: vsce package

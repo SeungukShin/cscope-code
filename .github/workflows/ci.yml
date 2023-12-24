@@ -22,4 +22,4 @@ jobs:
           echo "$(npm bin)" >> $GITHUB_PATH
 
       - name: Build vscode extension
-        run: vsce package
+        run: npx vsce package

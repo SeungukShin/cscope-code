@@ -22,7 +22,7 @@ jobs:
           echo "$(npm bin)" >> $GITHUB_PATH
 
       - name: Build vscode extension
-        run: vsce package
+        run: npx vsce package
 
       - name: Create Release
         id: create_release
@@ -51,6 +51,6 @@ jobs:
           asset_content_type: application/zip
 
       - name: Publish vscode extension
-        run: vsce publish -p $VSCE_TOKEN
+        run: npx vsce publish -p $VSCE_TOKEN
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}

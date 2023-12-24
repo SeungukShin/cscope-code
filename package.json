@@ -2,15 +2,15 @@
 	"name": "cscope-code",
 	"displayName": "cscope-code",
 	"description": "Cscope Extension for Code",
-	"icon": "cscope.png",
-	"version": "0.0.6",
+	"icon": "resources/cscope.png",
+	"version": "0.0.7",
 	"publisher": "SeungukShin",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/SeungukShin/cscope-code"
 	},
 	"engines": {
-		"vscode": "^1.44.0"
+		"vscode": "^1.74.0"
 	},
 	"categories": [
 		"Other"
@@ -19,7 +19,7 @@
 		"onLanguage:c",
 		"onLanguage:cpp"
 	],
-	"main": "./lib/cscope-code.js",
+	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
@@ -233,14 +233,14 @@
 				{
 					"id": "cscopeContainer",
 					"title": "Cscope",
-					"icon": "cscope.png"
+					"icon": "resources/cscope.png"
 				}
 			]
 		},
 		"views": {
 			"cscopeContainer": [
 				{
-					"id": "cscopeOutput",
+					"id": "cscopeTreeView",
 					"name": "Cscope"
 				}
 			]
@@ -284,17 +284,17 @@
 						"default": true,
 						"description": "Preview the result of the query."
 					},
-					"cscope-code.callHierarchy": {
+					"cscope-code.hierarchy": {
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Show Call Hierarchy'."
 					},
-					"cscope-code.definitions": {
+					"cscope-code.definition": {
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Peek Definition'."
 					},
-					"cscope-code.references": {
+					"cscope-code.reference": {
 						"type": "boolean",
 						"default": true,
 						"description": "Support 'Peek References'."
@@ -302,8 +302,16 @@
 					"cscope-code.logLevel": {
 						"type": "string",
 						"default": "E",
-						"enum": ["E", "W", "I"],
-						"enumDescriptions": ["Error", "Warning", "Information"]
+						"enum": [
+							"E",
+							"W",
+							"I"
+						],
+						"enumDescriptions": [
+							"Error",
+							"Warning",
+							"Information"
+						]
 					},
 					"cscope-code.maxBuffer": {
 						"type": "number",
@@ -313,7 +321,10 @@
 					"cscope-code.output": {
 						"type": "string",
 						"default": "QuickPick",
-						"enum": ["QuickPick", "TreeView"]
+						"enum": [
+							"QuickPick",
+							"TreeView"
+						]
 					}
 				}
 			}
@@ -328,16 +339,14 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.44.0",
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^7.0.2",
 		"@types/node": "^13.11.0",
+		"@types/vscode": "^1.74.0",
 		"eslint": "^6.8.0",
-		"@typescript-eslint/parser": "^2.26.0",
-		"@typescript-eslint/eslint-plugin": "^2.26.0",
 		"glob": "^7.1.6",
 		"mocha": "^10.2.0",
-		"typescript": "^3.8.3",
+		"typescript": "^4.9.3",
 		"vscode-test": "^1.3.0"
 	}
 }

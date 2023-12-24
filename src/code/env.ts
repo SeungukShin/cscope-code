@@ -1,51 +1,52 @@
-'use babel';
 
-const path = require('path');
-const process = require('process');
-const vscode = require('vscode');
-const IEnv = require('../interface/ienv');
-const { FilePosition } = require('../interface/position');
-const Editor = require('./editor');
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as process from 'process';
+import { FilePosition } from '../interface/position';
+import IEditor from '../interface/ieditor';
+import Editor from './editor';
+import IEnv from '../interface/ienv';
 
-module.exports = class Env extends IEnv {
+export default class Env implements IEnv {
 	/**
-	 * @property {Env} instance - static
+	 * @property {Env} instance - instance
 	 */
+	private static instance: Env;
 
 	/**
 	 * @constructor
-	 * @returns {Env}
 	 */
-	constructor() {
+	private constructor() {
 		if (!Env.instance) {
-			super();
 			Env.instance = this;
 		}
 		return Env.instance;
 	}
 
 	/**
+	 * Get the environment
 	 * @returns {Env}
 	 */
-	static getInstance() {
+	static getInstance(): Env {
 		if (!Env.instance) {
-			Env.instance = new Env();
+			new Env();
 		}
 		return Env.instance;
 	}
 
 	/**
+	 * Destroy
 	 * @returns {void}
 	 */
-	destroy() {}
+	destroy(): void {}
 
 	/**
 	 * Get a current directory.
-	 * @returns {String} - A current directory.
+	 * @returns {string} - A current directory.
 	 */
-	getCurrentDirectory() {
+	getCurrentDirectory(): string {
 		const workspaces = vscode.workspace.workspaceFolders;
-		if (workspaces.length > 0) {
+		if (workspaces && workspaces.length > 0) {
 			return workspaces[0].uri.fsPath;
 		}
 		const editor = vscode.window.activeTextEditor;
@@ -61,9 +62,9 @@ module.exports = class Env extends IEnv {
 
 	/**
 	 * Get a current word under the cursor.
-	 * @returns {String} - A current word.
+	 * @returns {string} - A current word.
 	 */
-	getCurrentWord() {
+	getCurrentWord(): string {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			return '';
@@ -82,12 +83,12 @@ module.exports = class Env extends IEnv {
 
 	/**
 	 * Get a current position of the cursor.
-	 * @returns {FilePosition} - A current position of the cursor.
+	 * @returns {FilePosition | undefined} - A current position of the cursor.
 	 */
-	getCurrentPosition() {
+	getCurrentPosition(): FilePosition | undefined {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
-			return null;
+			return undefined;
 		}
 		const document = editor.document;
 		const selection = editor.selection;
@@ -99,10 +100,10 @@ module.exports = class Env extends IEnv {
 	/**
 	 * Open a file and return editor object.
 	 * @param {FilePosition} position - A file name and cursor position.
-	 * @param {Boolean} preview - A preview option.
+	 * @param {boolean} preview - A preview option.
 	 * @returns {Promise<IEditor>} - An editor object.
 	 */
-	async open(position, preview) {
+	async open(position: FilePosition, preview: boolean): Promise<IEditor> {
 		return new Promise((resolve, reject) => {
 			vscode.workspace.openTextDocument(position.getFile()).then((document) => {
 				const range = new vscode.Range(position.getLine(), position.getColumn(), position.getLine(), position.getColumn());
@@ -119,10 +120,10 @@ module.exports = class Env extends IEnv {
 				}
 				vscode.window.showTextDocument(document, options).then((editor) => {
 					resolve(new Editor(editor));
-				}), ((error) => {
+				}), ((error: any) => {
 					reject(error);
 				});
-			}), ((error) => {
+			}), ((error: any) => {
 				reject(error);
 			});
 		});
@@ -130,20 +131,20 @@ module.exports = class Env extends IEnv {
 
 	/**
 	 * Show an input box and get an input.
-	 * @param {String} value - A default value.
-	 * @returns {Promise<String>} - An input value.
+	 * @param {string} value - A default value.
+	 * @returns {Promise<string | undefined>} - An input value.
 	 */
-	async getInput(value) {
+	async getInput(value: string): Promise<string | undefined> {
 		return vscode.window.showInputBox({ value: value });
 	}
 
 	/**
 	 * Observe changes of files.
-	 * @param {String} extensions - File extensions to observe.
-	 * @param {Function} callback - A callback function to call when a file is changed.
-	 * @returns {Object} - A disposible object.
+	 * @param {string} extensions - File extensions to observe.
+	 * @param {() => void} callback - A callback function to call when a file is changed.
+	 * @returns {vscode.Disposable} - A disposible object.
 	 */
-	observeFiles(extensions, callback) {
+	observeFiles(extensions: string, callback: () => void): vscode.Disposable {
 		const root = this.getCurrentDirectory();
 		const pattern = path.posix.join(root, '**/*.{' + extensions + '}');
 		const fswatcher = vscode.workspace.createFileSystemWatcher(pattern);

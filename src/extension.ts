@@ -1,288 +1,358 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Execute } from './execute';
-import { Config } from './config';
-import { Log } from './log';
-import { History } from './history';
-import { Query } from './query';
-import { QuickPick } from './quickPick';
-import { CallHierarchyProvider } from './callHierarchyProvider';
-import { DefinitionReferenceProvider } from './definitionReferenceProvider';
-import { TreeDataProvider } from './treeDataProvider';
+import * as fs from 'fs';
+import IConfig from './interface/iconfig';
+import Config from './code/config';
+import ILog from './interface/ilog';
+import Log from './code/log';
+import IEnv from './interface/ienv';
+import Env from './code/env';
+import IStatusbar from './interface/istatusbar';
+import Statusbar from './code/statusbar';
+import IResource from './interface/iresource';
+import Resource from './code/resource';
+import IFileSelectList from './interface/ifile-select-list';
+import FileSelectList from './code/file-select-list';
+import IFileTreeData from './interface/ifile-tree-data';
+import FileTreeData from './code/file-tree-data';
+import { FilePosition } from './interface/position';
+import History from './interface/history';
+import IItem from './interface/iitem';
+import Cscope from './cscope/cscope';
+import { HierarchyProvider } from './hierarchy-provider';
+import { DefRefProvider } from './def-ref-provider';
 
-export class Cscope {
-	private config: Config;
-	private log: Log;
-	private cscopeQuery: Query;
+export class CscopeCode implements vscode.Disposable {
+	/**
+	 * @property {vscode.Uri} extensionBase - extension base uri
+	 * @property {vscode.Disposable[]} subscriptions
+	 * @property {vscode.Disposable | undefined} buildDisposable
+	 * @property {IConfig} config
+	 * @property {ILog} log
+	 * @property {IEnv} env
+	 * @property {IStatusbar} statusbar
+	 * @property {IResource} res
+	 * @property {History} history
+	 * @property {Cscope} cscope
+	 * @property {String} prevWord
+	 * @property {String} prevCwd
+	 * @property {IItem[]} prevResults
+	 * @property {TreeDataProvider | undefined} treeView
+	 * @property {Disposable | undefined} hierarchy
+	 * @property {Disposable | undefined} definition
+	 * @property {Disposable | undefined} reference
+	 */
+	private extensionBase: vscode.Uri;
+	private subscriptions: vscode.Disposable[];
+	private buildDisposable: vscode.Disposable | undefined;
+	private config: IConfig;
+	private log: ILog;
+	private env: IEnv;
+	private statusbar: IStatusbar;
+	private res: IResource;
 	private history: History;
-	private fswatcher: vscode.FileSystemWatcher | undefined;
-	private callHierarchy: vscode.Disposable | undefined;
-	private definitions: vscode.Disposable | undefined;
-	private references: vscode.Disposable | undefined;
-	private treeData: TreeDataProvider | undefined;
+	private cscope: Cscope;
+	private prevWord: string;
+	private prevCwd: string;
+	private prevResults: IItem[];
+	private treeView: IFileTreeData | undefined;
+	private hierarchy: vscode.Disposable | undefined;
+	private definition: vscode.Disposable | undefined;
+	private reference: vscode.Disposable | undefined;
 
+	/**
+	 * @constructor
+	 * @param {vscode.ExtensionContext} context
+	 */
 	constructor(context: vscode.ExtensionContext) {
-		this.config = Config.getInstance();
-		this.log = Log.getInstance();
-		this.cscopeQuery = new Query('', '');
-		this.history = new History();
-		this.callHierarchy = undefined;
-		this.definitions = undefined;
-		this.references = undefined;
+		this.extensionBase = context.extensionUri;
+		this.subscriptions = context.subscriptions;
+		this.buildDisposable = undefined;
+		this.config = Config.getInstance('cscope-code');
+		this.log = Log.getInstance('cscope-code', this.config);
+		this.env = Env.getInstance();
+		this.statusbar = Statusbar.getInstance();
+		this.res = Resource.getInstance(context.extensionUri);
+		this.history = new History(this.log);
+		this.cscope = new Cscope(this.config, this.log, this.env);
+		this.prevWord = '';
+		this.prevCwd = '';
+		this.prevResults = [];
+		this.treeView = undefined;
+		this.hierarchy = undefined;
+		this.definition = undefined;
+		this.reference = undefined;
 
-		// Check Auto Build Configuration
-		if (this.config.get('auto')) {
-			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
-			const database = path.posix.join(root, this.config.get('database'));
-			const db = vscode.Uri.file(database);
-
-			try {
-				vscode.workspace.fs.stat(db).then((stat) => {
-					const msg: string = '"' + db + '"' + ' exists.';
-					this.log.info(msg);
-				}, (stat) => {
-					const msg: string = '"' + db + '"' + ' does not exist.';
-					this.log.info(msg);
-					this.build();
-				});
-			} catch {
-				const msg: string = 'Exception occured while checking "' + db + '".';
-				this.log.err(msg);
-				vscode.window.showInformationMessage(msg);
-				this.build();
-			}
-			this.buildAuto();
-		}
-
-		// Register Configuration Watcher
+		// Configuration Watcher
+		this.setWatchers();
 		context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
 			this.config.reload();
-			if (e.affectsConfiguration('cscopeCode.auto') || e.affectsConfiguration('cscopeCode.extensions')) {
-				this.buildAuto();
-			}
-			if (e.affectsConfiguration('cscopeCode.callHierarchy')) {
-				if (this.config.get('callHierarchy')) {
-					this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CallHierarchyProvider());
-				} else {
-					this.callHierarchy?.dispose();
-					this.callHierarchy = undefined;
-				}
-			}
-			if (e.affectsConfiguration('cscopeCode.definitions')) {
-				if (this.config.get('definitions')) {
-					this.definitions = vscode.languages.registerDefinitionProvider('c', new DefinitionReferenceProvider());
-				} else {
-					this.definitions?.dispose();
-					this.definitions = undefined;
-				}
-			}
-			if (e.affectsConfiguration('cscopeCode.references')) {
-				if (this.config.get('references')) {
-					this.references = vscode.languages.registerReferenceProvider('c', new DefinitionReferenceProvider());
-				} else {
-					this.references?.dispose();
-					this.references = undefined;
-				}
-			}
-			if (e.affectsConfiguration('cscopeCode.output')) {
-				if (this.config.get('output') == 'TreeView') {
-					this.treeData = new TreeDataProvider(this.cscopeQuery.getResults());
-				} else {
-					this.treeData?.dispose();
-					this.treeData = undefined;
-				}
-			}
+			this.setWatchers(e);
 		}));
 
 		// Register Commands
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.build', () => this.build()));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.symbol', () => this.query('symbol', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.symbol.input', () => this.query('symbol', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.definition', () => this.query('definition', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.definition.input', () => this.query('definition', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.callee', () => this.query('callee', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.callee.input', () => this.query('callee', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.caller', () => this.query('caller', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.caller.input', () => this.query('caller', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.text', () => this.query('text', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.text.input', () => this.query('text', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.egrep', () => this.query('egrep', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.egrep.input', () => this.query('egrep', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.file', () => this.query('file', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.file.input', () => this.query('file', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.include', () => this.query('include', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.include.input', () => this.query('include', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.set', () => this.query('set', false)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.set.input', () => this.query('set', true)));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.result', () => this.quickPick()));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.pop', () => this.pop()));
-		context.subscriptions.push(vscode.commands.registerCommand('cscope-code.go', (uri, range) => this.go(uri, range)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:build", () => this.build()));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:symbol", () => this.query('symbol', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:symbol-input", () => this.query('symbol', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:definition", () => this.query('definition', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:definition-input", () => this.query('definition', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:callee", () => this.query('callee', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:callee-input", () => this.query('callee', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:caller", () => this.query('caller', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:caller-input", () => this.query('caller', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:text", () => this.query('text', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:text-input", () => this.query('text', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:egrep", () => this.query('egrep', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:egrep-input", () => this.query('egrep', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:file", () => this.query('file', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:file-input", () => this.query('file', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:include", () => this.query('include', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:include-input", () => this.query('include', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:set", () => this.query('set', false)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:set-input", () => this.query('set', true)));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:show-results", () => this.showResults()));
+		this.subscriptions.push(vscode.commands.registerCommand("cscope-code:pop", () => this.pop()));
+		this.subscriptions.push(vscode.commands.registerCommand('cscope-code:go', (uri, range) => this.go(uri, range)));
+	}
 
-		// Register Providers
-		if (this.config.get('callHierarchy')) {
-			this.callHierarchy = vscode.languages.registerCallHierarchyProvider('c', new CallHierarchyProvider());
-		}
-		if (this.config.get('definitions')) {
-			this.definitions = vscode.languages.registerDefinitionProvider('c', new DefinitionReferenceProvider());
-		}
-		if (this.config.get('references')) {
-			this.references = vscode.languages.registerReferenceProvider('c', new DefinitionReferenceProvider());
+	/**
+	 * Set up watchers
+	 * @returns {void}
+	 */
+	private setWatchers(e: vscode.ConfigurationChangeEvent | undefined = undefined): void {
+		// Check auto build configuration
+		if (!e || e.affectsConfiguration('cscope-code.auto') || e.affectsConfiguration('cscope-code.extension')) {
+			if (this.config.get('auto')) {
+				const root = this.env.getCurrentDirectory();
+				const db = path.join(root, this.config.get('database'));
+				fs.access(db, fs.constants.F_OK, (err) => {
+					if (err) {
+						this.build();
+					}
+				});
+				if (!this.buildDisposable) {
+					this.buildDisposable = this.env.observeFiles(this.config.get('extensions'), this.build.bind(this));
+				}
+			} else {
+				this.buildDisposable?.dispose();
+				this.buildDisposable = undefined;
+			}
 		}
 
-		// Create View
-		if (this.config.get('output') == 'TreeView') {
-			this.treeData = new TreeDataProvider(this.cscopeQuery.getResults());
+		// Check call hierarchy provider configuration
+		if (!e || e.affectsConfiguration('cscope-code.hierarchy')) {
+			if (this.config.get('hierarchy')) {
+				if (!this.hierarchy) {
+					this.hierarchy = vscode.languages.registerCallHierarchyProvider('c', new HierarchyProvider(this.log, this.env, this.statusbar, this.cscope));
+				}
+			} else {
+				this.hierarchy?.dispose();
+				this.hierarchy = undefined;
+			}
+		}
+
+		// Check definition provider configuration
+		if (!e || e.affectsConfiguration('cscope-code.definition')) {
+			if (this.config.get('definition')) {
+				if (!this.definition) {
+					this.definition = vscode.languages.registerDefinitionProvider('c', new DefRefProvider(this.log, this.env, this.statusbar, this.cscope));
+				}
+			} else {
+				this.definition?.dispose();
+				this.definition = undefined;
+			}
+		}
+
+		// Check reference provider configuration
+		if (!e || e.affectsConfiguration('cscope-code.reference')) {
+			if (this.config.get('reference')) {
+				if (!this.reference) {
+					this.reference = vscode.languages.registerReferenceProvider('c', new DefRefProvider(this.log, this.env, this.statusbar, this.cscope));
+				}
+			} else {
+				this.reference?.dispose();
+				this.reference = undefined;
+			}
 		}
 	}
 
+	/**
+	 * Dispose
+	 * @returns {void}
+	 */
 	dispose(): void {
-		this.fswatcher?.dispose();
-		this.fswatcher = undefined;
-		this.callHierarchy?.dispose();
-		this.callHierarchy = undefined;
-		this.definitions?.dispose();
-		this.definitions = undefined;
-		this.references?.dispose();
-		this.references = undefined;
-		this.treeData?.dispose();
-		this.treeData = undefined;
+		this.buildDisposable?.dispose();
+		this.buildDisposable = undefined;
+		this.statusbar.destroy();
+		this.env.destroy();
+		this.treeView?.dispose();
+		this.hierarchy?.dispose();
+		this.definition?.dispose();
+		this.reference?.dispose();
 	}
 
-	private async build(): Promise<void> {
-		const cmd: string = this.config.get('cscope') + ' ' + this.config.get('buildArgs') + ' -f ' + this.config.get('database');
-		this.log.info(cmd);
-		const prog = vscode.window.setStatusBarMessage('Building "' + this.config.get('database') + '"...');
+	/**
+	 * Build
+	 * @returns {Promise<void>}
+	 */
+	async build(): Promise<void> {
+		this.statusbar.show('cscope-code: building...');
 		try {
-			let {stdout, stderr} = await Execute.exec(cmd);
-			const msg: string = '"' + this.config.get('database') + '" is updated.'
-			this.log.info(msg);
-			vscode.window.setStatusBarMessage(msg, 5000);
-		} catch ({stdout, stderr}) {
-			const msg: string = 'Error occurred while updating "' + this.config.get('database') + '".'
-			this.log.err(msg);
-			vscode.window.showInformationMessage(msg);
-			this.log.err(stderr);
+			await this.cscope.build(this.env.getCurrentDirectory());
+		} catch (err) {
+			this.log.err('cannot build the database: ', err);
 		}
-		prog.dispose();
+		this.statusbar.hide();
 	}
 
-	private buildAuto(): void {
-		if (this.fswatcher != undefined) {
-			this.fswatcher.dispose();
-			this.fswatcher = undefined;
+	/**
+	 * @param {string} type
+	 * @param {string} word
+	 * @param {string} cwd
+	 * @returns {Promise<IItem[] | undefined>}
+	 */
+	async __query(type: string, word: string, cwd: string): Promise<IItem[] | undefined> {
+		this.statusbar.show('cscope-code: querying...');
+		let results: IItem[] | undefined = undefined;
+		try {
+			results = await this.cscope.query(type, word, cwd);
+		} catch (err) {
+			this.log.err('cannot query: ', err);
 		}
-		if (this.config.get('auto')) {
-			const root = vscode.workspace.rootPath ? vscode.workspace.rootPath : '';
-			const pattern: string = path.posix.join(root, '**/*.{' + this.config.get('extensions') + '}');
-			this.log.info('Register Auto Build Pattern: "' + pattern + '"');
-			this.fswatcher = vscode.workspace.createFileSystemWatcher(pattern);
-			this.fswatcher.onDidChange(() => this.build());
-			this.fswatcher.onDidCreate(() => this.build());
-			this.fswatcher.onDidDelete(() => this.build());
-		}
+		this.statusbar.hide();
+		return results;
 	}
 
-	private findWord(): string {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			const msg: string = 'Cannot find Active Text Editor.';
-			this.log.err(msg);
-			vscode.window.showInformationMessage(msg);
-			return '';
+	/**
+	 * @param {IItem[]} items
+	 * @param {string} word
+	 * @param {string} cwd
+	 * @returns {Promise<void>}
+	 */
+	async __showTree(items: IItem[], word: string, cwd: string): Promise<void> {
+		const date = new Date();
+		const cmd = this.cscope.getQueryCmd() + ' (' + date.toLocaleString('en-US', { hour12: false }) + ')';
+		if (!this.treeView) {
+			this.treeView = new FileTreeData(this.env, this.res);
 		}
-		const document = editor.document;
-		const selection = editor.selection;
-		if (!selection.isEmpty) {
-			return document.getText(selection);
-		}
-		const range = document.getWordRangeAtPosition(selection.active);
-		if (!range) {
-			return '';
-		}
-		return document.getText(range);
+		this.treeView.reload(items, word, cwd, cmd);
 	}
 
-	private async query(option: string, input: boolean): Promise<void> {
-		let word: string | undefined = this.findWord();
+	/**
+	 * @param {IItem[]} items
+	 * @param {string} word
+	 * @param {string} cwd
+	 * @returns {Promise<boolean>}
+	 */
+	async __showList(items: IItem[], word: string, cwd: string): Promise<boolean> {
+		const selectList: IFileSelectList = new FileSelectList(this.env, this.res, items, word, cwd, true);
+		let selected = false;
+		try {
+			selected = await selectList.show();
+		} catch (err) {
+			if (err !== 'cancelled') {
+				this.log.err('cannot show the select list: ', err);
+			}
+		}
+		selectList.destroy();
+		return selected;
+	}
+
+	/**
+	 * @param {string} type
+	 * @param {boolean} input
+	 * @returns {Promise<void>}
+	 */
+	async query(type: string, input: boolean): Promise<void> {
+		const cwd = this.env.getCurrentDirectory();
+		let word: string | undefined = this.env.getCurrentWord();
 		if (input) {
-			word = await vscode.window.showInputBox({value: word});
+			try {
+				word = await this.env.getInput(word);
+			} catch (err) {
+				this.log.err('cannot get a word to query: ', err);
+				return;
+			}
 		}
 		if (!word) {
-			const msg: string = 'Cannot get pattern from the input box.';
-			this.log.err(msg);
-			vscode.window.showInformationMessage(msg);
+			this.log.err('cannot get a word to query');
 			return;
 		}
-		this.cscopeQuery = new Query(option, word);
-		await this.cscopeQuery.query();
-		await this.cscopeQuery.wait();
-		if (this.config.get('output') == 'QuickPick') {
-			const quickPick = new QuickPick(this.cscopeQuery.getResults());
-			const position = await quickPick.show();
-			if (position != undefined) {
-				this.history.push();
-				position.go();
-			}
+		const results = await this.__query(type, word, cwd);
+		if (!results) {
+			this.log.err('cannot get any result');
+			return;
+		}
+		this.prevWord = word;
+		this.prevCwd = cwd;
+		this.prevResults = results;
+		const position = this.env.getCurrentPosition();
+		if (this.config.get('output') == 'TreeView') {
+			this.__showTree(results, word, cwd);
 		} else {
-			this.treeData?.reload(this.cscopeQuery.getResults());
+			const selected = await this.__showList(results, word, cwd);
+			if (selected && position) {
+				this.history.push(position);
+			}
 		}
 	}
 
-	async quickPick(): Promise<void> {
-		const quickPick = new QuickPick(this.cscopeQuery.getResults());
-		const position = await quickPick.show();
-		if (position != undefined) {
-			this.history.push();
-			position.go();
+	/**
+	 * @returns {Promise<void>}
+	 */
+	async showResults(): Promise<void> {
+		if (!this.prevResults) {
+			return;
+		}
+		const position = this.env.getCurrentPosition();
+		const selected = await this.__showList(this.prevResults, this.prevWord, this.prevCwd);
+		if (selected && position) {
+			this.history.push(position);
 		}
 	}
 
-	pop(): void {
+	/**
+	 * @returns {Promise<FilePosition | undefined>}
+	 */
+	async pop(): Promise<FilePosition | undefined> {
 		const position = this.history.pop();
-		position?.go();
+		if (position) {
+			this.env.open(position, false);
+		}
+		return position;
 	}
 
-	async go(uri: vscode.Uri, range: vscode.Range): Promise<void> {
-		return new Promise<void>(async (resolve, reject) => {
-			this.history.push();
-			// open a document
-			vscode.workspace.openTextDocument(uri).then((f: vscode.TextDocument) => {
-				let option: vscode.TextDocumentShowOptions = {
-					preserveFocus: false,
-					preview: false,
-					selection: range,
-					viewColumn: vscode.ViewColumn.Active
-				};
-				// open an editor
-				vscode.window.showTextDocument(f, option).then((e: vscode.TextEditor) => {
-					resolve();
-				}), ((error: any) => {
-					const msg: string = 'Cannot show "' + uri + '".';
-					this.log.err(msg);
-					vscode.window.showInformationMessage(msg);
-					reject();
-				});
-			}), ((error: any) => {
-				const msg: string = 'Cannot open "' + uri + '".';
-				this.log.err(msg);
-				vscode.window.showInformationMessage(msg);
-				reject(undefined);
-			});
-		});
+	/**
+	 * @param {FilePosition} position
+	 * @param {string} word
+	 * @returns {Promise<void>}
+	 */
+	async go(position: FilePosition, word: string): Promise<void> {
+		const oldPosition = this.env.getCurrentPosition();
+		const editor = await this.env.open(position, false);
+		const line = position.getLine();
+		const text = editor.getTextLine(line);
+		const column = text?.indexOf(word);
+		if (column && column > 0) {
+			editor.setCurosr(line, column);
+		}
+		if (oldPosition) {
+			this.history.push(oldPosition);
+		}
 	}
 }
 
-let cscope: Cscope | undefined;
+let cscopeCode: CscopeCode | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-	cscope = new Cscope(context);
+	cscopeCode = new CscopeCode(context);
 	console.log('"cscope-code" is now active!');
 }
 
 export function deactivate(): void {
-	if (cscope) {
-		cscope.dispose();
-		cscope = undefined;
+	if (cscopeCode) {
+		cscopeCode.dispose();
+		cscopeCode = undefined;
 	}
 	console.log('"cscope-code" is now inactive!');
 }

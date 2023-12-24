@@ -1,10 +1,12 @@
-'use babel';
+import * as cp from 'child_process';
+import * as rl from 'readline';
+import IConfig from '../interface/iconfig';
+import ILog from '../interface/ilog';
+import IEnv from '../interface/ienv';
+import IItem from '../interface/iitem';
+import Item from './item';
 
-const cp = require('child_process');
-const rl = require('readline');
-const Item = require('./item');
-
-const QueryType = Object.freeze({
+const QueryType: { [key: string]: string } = Object.freeze({
 	'symbol': '-0',
 	'definition': '-1',
 	'callee': '-2',
@@ -16,36 +18,45 @@ const QueryType = Object.freeze({
 	'set': '-8'
 });
 
-module.exports = class Cscope {
+export default class Cscope {
 	/**
 	 * @property {IConfig} config
 	 * @property {ILog} log
 	 * @property {IEnv} env
+	 * @property {string} buildCmd;
+	 * @property {string} queryCmd;
 	 */
+	private config: IConfig;
+	private log: ILog;
+	private env: IEnv;
+	private buildCmd: string;
+	private queryCmd: string;
 
 	/**
 	 * @constructor
 	 * @param {IConfig} config
 	 * @param {ILog} log
 	 * @param {IEnv} env
-	 * @returns {Cscope}
 	 */
-	constructor(config, log, env) {
+	constructor(config: IConfig, log: ILog, env: IEnv) {
 		this.config = config;
 		this.log = log;
 		this.env = env;
+		this.buildCmd = '';
+		this.queryCmd = '';
 	}
 
 	/**
-	 * @param {String} cwd
-	 * @returns {Promise<String>}
+	 * @param {string} cwd - current working directory
+	 * @returns {Promise<string>}
 	 */
-	async build(cwd) {
+	async build(cwd: string): Promise<string> {
 		return new Promise((resolve, reject) => {
-			const cmd = this.config.get('cscope');
-			const db = this.config.get('database');
-			const buildArgs = this.config.get('buildArgs');
+			const cmd = this.config.get<string>('cscope');
+			const db = this.config.get<string>('database');
+			const buildArgs = this.config.get<string>('buildArgs');
 			const args = [buildArgs, '-f', db];
+			this.buildCmd = [cmd, ...args].join(' ');
 			this.log.info(cmd, args, cwd);
 
 			let out = '';
@@ -76,20 +87,21 @@ module.exports = class Cscope {
 	}
 
 	/**
-	 * @param {String} type
-	 * @param {String} word
-	 * @param {String} cwd
-	 * @returns {Promise<Item[]>}
+	 * @param {string} type
+	 * @param {string} word
+	 * @param {string} cwd - current working directory
+	 * @returns {Promise<IItem[]>}
 	 */
-	async query(type, word, cwd) {
+	async query(type: string, word: string, cwd: string): Promise<IItem[]> {
 		return new Promise((resolve, reject) => {
-			const cmd = this.config.get('cscope');
-			const db = this.config.get('database');
-			const queryArgs = this.config.get('queryArgs');
+			const cmd = this.config.get<string>('cscope');
+			const db = this.config.get<string>('database');
+			const queryArgs = this.config.get<string>('queryArgs');
 			const args = [queryArgs, '-f', db, QueryType[type], word];
+			this.queryCmd = [cmd, ...args].join(' ');
 			this.log.info(cmd, args, cwd);
 
-			let results = [];
+			let results: IItem[] = [];
 			let out = '';
 			let err = '';
 			const proc = cp.spawn(cmd, args, { cwd: cwd });
@@ -123,5 +135,19 @@ module.exports = class Cscope {
 				}
 			});
 		});
+	}
+
+	/**
+	 * @returns {string}
+	 */
+	getBuildCmd(): string {
+		return this.buildCmd;
+	}
+
+	/**
+	 * @returns {string}
+	 */
+	getQueryCmd(): string {
+		return this.queryCmd;
 	}
 }

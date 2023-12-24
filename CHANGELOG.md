@@ -4,9 +4,12 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.7]
+### Fixed
+- Fix appending results without separator in TreeView
+
 ### Added
-- Add icons for QuickPick. (method icon for .c, field icon for .h and file icon for others)
+- Add icons for QuickPick.
 
 ### Changed
 - Refactoring: Remove prefix 'cscope' on classes and files.

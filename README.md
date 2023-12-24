@@ -1,11 +1,11 @@
 # Cscope Extension for VS Code
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/SeungukShin/cscope-code/CI)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SeungukShin/cscope-code/ci.yml?branch=master)
 [![](https://img.shields.io/visual-studio-marketplace/v/SeungukShin.cscope-code)](https://marketplace.visualstudio.com/items?itemName=SeungukShin.cscope-code)
 ![install](https://img.shields.io/visual-studio-marketplace/i/SeungukShin.cscope-code)
 
 Integrates [cscope](http://cscope.sourceforge.net) into VS Code.
 
-![demo](https://raw.githubusercontent.com/SeungukShin/cscope-code/master/demo.gif)
+![demo](https://raw.githubusercontent.com/SeungukShin/cscope-code/master/resources/demo.gif)
 
 ## Commands
 
@@ -28,9 +28,16 @@ Integrates [cscope](http://cscope.sourceforge.net) into VS Code.
 
 | Name       | Description                                                              | Default     |
 |------------|--------------------------------------------------------------------------|-------------|
-| build      | Command to build a cscope database.                                      | cscope -RbU |
-| query      | Command to query a symbol.                                               | cscope -RdL |
+| cscope     | A filename of cscope executalbe file.                                    | cscope      |
+| buildArgs  | Arguments to build a cscope database.                                    | -RbU        |
+| queryArgs  | Arguments to query a symbol.                                             | -RdL        |
 | database   | A database filename for cscope.                                          | cscope.out  |
 | auto       | Generate a cscope database when open an workspace or store a file on it. | true        |
 | extensions | Extensions to monitor their changes to update database.                  | c,h         |
 | preview    | Preview the result of the query.                                         | true        |
+| hierarchy  | Use this extension as call hierarchy provider.                           | true        |
+| definition | Use this extension as definition provider.                               | true        |
+| reference  | Use this extension as reference provider.                                | true        |
+| logLevel   | Log level.                                                               | Error       |
+| maxBuffer  | Max. buffer size for output from cscope in MB.                           | 10          |
+| output     | Output type for cscope query result.                                     | QuickPick   |

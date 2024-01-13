@@ -49,8 +49,3 @@ jobs:
           asset_path: ./cscope-code-${{ steps.get_version.outputs.VERSION }}.vsix
           asset_name: cscope-code-${{ steps.get_version.outputs.VERSION }}.vsix
           asset_content_type: application/zip
-
-      - name: Publish vscode extension
-        run: npx vsce publish -p $VSCE_TOKEN
-        env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}

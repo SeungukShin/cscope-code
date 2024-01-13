@@ -26,18 +26,19 @@ Integrates [cscope](http://cscope.sourceforge.net) into VS Code.
 
 ## Configurations
 
-| Name       | Description                                                              | Default     |
-|------------|--------------------------------------------------------------------------|-------------|
-| cscope     | A filename of cscope executalbe file.                                    | cscope      |
-| buildArgs  | Arguments to build a cscope database.                                    | -RbU        |
-| queryArgs  | Arguments to query a symbol.                                             | -RdL        |
-| database   | A database filename for cscope.                                          | cscope.out  |
-| auto       | Generate a cscope database when open an workspace or store a file on it. | true        |
-| extensions | Extensions to monitor their changes to update database.                  | c,h         |
-| preview    | Preview the result of the query.                                         | true        |
-| hierarchy  | Use this extension as call hierarchy provider.                           | true        |
-| definition | Use this extension as definition provider.                               | true        |
-| reference  | Use this extension as reference provider.                                | true        |
-| logLevel   | Log level.                                                               | Error       |
-| maxBuffer  | Max. buffer size for output from cscope in MB.                           | 10          |
-| output     | Output type for cscope query result.                                     | QuickPick   |
+| Name          | Description                                                              | Default     |
+|---------------|--------------------------------------------------------------------------|-------------|
+| cscope        | A filename of cscope executalbe file.                                    | cscope      |
+| buildArgs     | Arguments to build a cscope database.                                    | -RbU        |
+| queryArgs     | Arguments to query a symbol.                                             | -RdL        |
+| database      | A database filename for cscope.                                          | cscope.out  |
+| auto          | Generate a cscope database when open an workspace or store a file on it. | true        |
+| extensions    | Extensions to monitor their changes to update database.                  | c,h         |
+| preview       | Preview the result of the query.                                         | true        |
+| hierarchy     | Use this extension as call hierarchy provider.                           | true        |
+| definition    | Use this extension as definition provider.                               | true        |
+| reference     | Use this extension as reference provider.                                | true        |
+| logLevel      | Log level.                                                               | Error       |
+| maxBuffer     | Max. buffer size for output from cscope in MB.                           | 10          |
+| output        | Output type for cscope query result.                                     | QuickPick   |
+| clearTreeView | Clear historical result in TreeView.                                     | false       |

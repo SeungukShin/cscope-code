@@ -4,6 +4,13 @@ All notable changes to the "cscope-code" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [Unreleased]
+### Changed
+- Reveal the first item instead of the last item in TreeView
+
+### Added
+- Add setting `Clear Tree View` for clearing historical results in TreeView
+
 ## [0.0.7]
 ### Fixed
 - Fix appending results without separator in TreeView

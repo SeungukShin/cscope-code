@@ -24,7 +24,6 @@ import { DefRefProvider } from './def-ref-provider';
 
 export class CscopeCode implements vscode.Disposable {
 	/**
-	 * @property {vscode.Uri} extensionBase - extension base uri
 	 * @property {vscode.Disposable[]} subscriptions
 	 * @property {vscode.Disposable | undefined} buildDisposable
 	 * @property {IConfig} config
@@ -42,7 +41,6 @@ export class CscopeCode implements vscode.Disposable {
 	 * @property {Disposable | undefined} definition
 	 * @property {Disposable | undefined} reference
 	 */
-	private extensionBase: vscode.Uri;
 	private subscriptions: vscode.Disposable[];
 	private buildDisposable: vscode.Disposable | undefined;
 	private config: IConfig;
@@ -65,7 +63,6 @@ export class CscopeCode implements vscode.Disposable {
 	 * @param {vscode.ExtensionContext} context
 	 */
 	constructor(context: vscode.ExtensionContext) {
-		this.extensionBase = context.extensionUri;
 		this.subscriptions = context.subscriptions;
 		this.buildDisposable = undefined;
 		this.config = Config.getInstance('cscope-code');
@@ -233,7 +230,7 @@ export class CscopeCode implements vscode.Disposable {
 		const date = new Date();
 		const cmd = this.cscope.getQueryCmd() + ' (' + date.toLocaleString('en-US', { hour12: false }) + ')';
 		if (!this.treeView) {
-			this.treeView = new FileTreeData(this.env, this.res);
+			this.treeView = new FileTreeData(this.config, this.env, this.res);
 		}
 		this.treeView.reload(items, word, cwd, cmd);
 	}

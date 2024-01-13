@@ -325,6 +325,11 @@
 							"QuickPick",
 							"TreeView"
 						]
+					},
+					"cscope-code.clearTreeView": {
+						"type": "boolean",
+						"default": "false",
+						"description": "Clear TreeView before appending a new result"
 					}
 				}
 			}

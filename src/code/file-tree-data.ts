@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import IConfig from '../interface/iconfig';
 import IEnv from '../interface/ienv';
 import IResource from '../interface/iresource';
 import { FilePosition } from '../interface/position';
@@ -112,6 +113,7 @@ class FileTreeDataItem implements IFileTreeDataItem {
 
 export default class FileTreeData implements IFileTreeData {
 	/**
+	 * @property {IConfig} config
 	 * @property {IEnv} env
 	 * @property {IResource} res
 	 * @property {string} word
@@ -119,6 +121,7 @@ export default class FileTreeData implements IFileTreeData {
 	 * @property {vscode.TreeView<IFileTreeDataItem>} treeView
 	 * @property {Map<string, IFileTreeDataItem>} items
 	 */
+	private config: IConfig;
 	private env: IEnv;
 	private res: IResource;
 	private word: string;
@@ -128,7 +131,8 @@ export default class FileTreeData implements IFileTreeData {
 	private _onDidChangeTreeData = new vscode.EventEmitter<IFileTreeDataItem | undefined | null>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-	constructor(env: IEnv, res: IResource) {
+	constructor(config: IConfig, env: IEnv, res: IResource) {
+		this.config = config;
 		this.env = env;
 		this.res = res;
 		this.word = '';
@@ -142,6 +146,9 @@ export default class FileTreeData implements IFileTreeData {
 		this.cwd = cwd;
 		const root = new FileTreeDataItem(this.res, cmd);
 		const curMap = new Map<string, FileTreeDataItem>();
+		if (this.config.get('clearTreeView')) {
+			this.items.clear();
+		}
 		for (let item of items) {
 			const file = item.getFile();
 			const line = item.getLine()
@@ -190,12 +197,12 @@ export default class FileTreeData implements IFileTreeData {
 		if (!parents) {
 			return;
 		}
-		const lastItems = parents[parents.length - 1].getChildren();
-		if (!lastItems) {
+		const firstItems = parents[0].getChildren();
+		if (!firstItems) {
 			return;
 		}
 		vscode.commands.executeCommand('workbench.actions.treeView.cscopeTreeView.collapseAll');
-		this.treeView.reveal(lastItems[lastItems.length - 1]);
+		this.treeView.reveal(firstItems[0]);
 	}
 
 	dispose(): void {
